@@ -10,7 +10,7 @@ The principles are based on the relation between non-deterministic finite automa
 
 ##Application Package
 
-MiDiVis <https://github.com/niasw/RegexViewer>
+RegexViewer <https://github.com/niasw/RegexViewer>
 
 Copyright 2014 Sun Sibai <niasw(AT)pku.edu.cn> & Liu Yu & Tian Chuang<br/>
 
