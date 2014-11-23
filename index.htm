@@ -11,5 +11,19 @@
  <div class="wrapper"><p class="center" style="width:700px;text-align:left;line-height:1pt;padding:0;"><b>RegexViewer</b></p><p class="center" style="width:700px;text-align:right;line-height:1pt;padding:0 0 10px 0;">@author <i>Sun Sibai</i> &amp; <i>Liu Yu</i> &amp; <i>Tian Chuang</i> </p></div>
  <!--<script src="http://d3js.org/d3.v3.min.js"></script>-->
  <script src="lib/d3.min.js"></script>
- <div class="wrapper"><a class="center" style="width:700px;text-align:center;line-height:10pt;padding:0;">Click Here. Nothing Happens.</a></div>
+ <div class="wrapper"><form class="center" style="text-align:center;">
+  Pattern (RegExp) = <input type="text" id="pattern" value=""/>
+  <input type="button" value="Build Nodes" onclick="javascript:;"/><br/>
+  Content (String) = <input type="text" id="content" value=""/>
+  <input type="button" value="Check Match" onclick="javascript:;"/><br/>
+ </form></div>
+ <div class="wrapper"><span class="center" style="text-align:center;">
+  Result RegEx : <pre id="regexResult"></pre>
+  Result Match : <p id="matchResult"></p>
+  Now Dealing : <pre id="currentPos"></pre> Press &lt;- &amp; -&gt; to Navigate.<br/>
+ </span></div>
+ <script src="js/preinit.js"></script>
+ <script src="js/nodes.js"></script>
+ <script src="js/tree.js"></script>
+ <script src="js/parse.js"></script>
 </body></html>
