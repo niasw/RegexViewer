@@ -1,6 +1,7 @@
 /** Apache License 2.0 Applies for Code Here **/
 /** @author Sun Sibai & Liu Yu & Tian Chuang **/
 function parseRegex(pattern) {
+ Node.clearAll();
  var q0=new Node().init().idx; // start state
  var ptnidx=0; // character index parsing
  var ptnchr; // character parsing
@@ -38,7 +39,7 @@ function parseRegex(pattern) {
     for (var it in sttNdLnkr) {
      if (node.lkf[0].idx!=node.idx) {
       Node.objStates[sttNdLnkr[it][1]].lk(sttNdLnkr[it][0],node.lkf[0].idx);
-      Node.objStates[statenode.lkf[it][1]].rm();
+      Node.objStates[node.idx].rm();node.rm();
      }
     }
     node.brk();
@@ -48,9 +49,7 @@ function parseRegex(pattern) {
    });
    break;
   default: // (...(...(p) => (...(......(c)
-console.log("default called");
    bktTree.trnvTwigs(function(node){node.rm();},function(node){
-console.log("leafFunc called");
     var newket = new Node().init().idx;
     Node.objStates[node.idx].lk(ptnchr,newket);
     node.lk1(new TreeNode().init(newket));
@@ -58,9 +57,16 @@ console.log("leafFunc called");
   }
   ptnidx+=1;
  }
+ bktTree.trnvTwigs(undefined,function(node){
+  Node.objStates[node.idx].setFinal(true);
+ });
+
+// DEBUG USE
+ var domRegRes=document.getElementById("regexResult");
+ domRegRes.textContent="q0="+q0+"\n"+"allState="+Node.allStates+"\n"+"objState="+Node.objStates+"\n"+"finState="+Node.finStates;
 console.log("q0=");console.log(q0);
 console.log("allState=");console.log(Node.allStates);
 console.log("objState=");console.log(Node.objStates);
 console.log("finState=");console.log(Node.finStates);
+console.log("auxTree=");console.log(bktTree);
 }
-parseRegex('a');

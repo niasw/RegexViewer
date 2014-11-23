@@ -17,7 +17,7 @@ TreeNode.prototype = { // obj property
   return this;
  },
  lk:function(nodeArray) { // add children
-  this.lk2.concat(nodeArray);
+  this.lk2=this.lk2.concat(nodeArray);
   for (var it in nodeArray) {nodeArray[it].lkf.push(this);}
   return this;
  },
@@ -27,7 +27,7 @@ TreeNode.prototype = { // obj property
    thsPos=this.lk2[it].lkf.indexOf(this);
    if (thsPos>-1) {this.lk2[it].lkf.splice(thsPos,1);}
   }
-  if (lkf.length>0) {
+  if (this.lkf.length>0) {
    thsPos=this.lkf[0].lk2.indexOf(this);
    if (thsPos>-1) {this.lkf[0].lk2.splice(thsPos,1);}
    this.lkf[0].lk(this.lk2);
@@ -35,7 +35,7 @@ TreeNode.prototype = { // obj property
  },
  brk:function() { // remove node. lose connection to children
   var thsPos;
-  if (lkf.length>0) {
+  if (this.lkf.length>0) {
    thsPos=this.lkf[0].lk2.indexOf(this);
    if (thsPos>-1) {this.lkf[0].lk2.splice(thsPos,1);}
   }
@@ -44,15 +44,12 @@ TreeNode.prototype = { // obj property
   var nextLevel = function(auxArr) {
    var newArr = [];
    for (var it in auxArr) {
-console.log("auxArr:");console.log(auxArr[it]);
-    newArr.concat(auxArr[it].lk2);
-console.log("newArr:");console.log(newArr);
+    newArr=newArr.concat(auxArr[it].lk2);
    }
    return newArr;
   }
   var auxArr1=[this];
   var auxArr2=nextLevel(auxArr1);
-console.log("auxArr2:");console.log(auxArr2);
   if (auxArr2.length<=0) return false; // failed
   else {
    while (auxArr2[0].lk2.length>0) { // watchout: strict balanced tree only
@@ -64,7 +61,6 @@ console.log("auxArr2:");console.log(auxArr2);
      twigFunc(auxArr1[it]);
     }
    }
-console.log("trnvTwigs called");console.log(leafFunc);
    if (leafFunc) {
     for (var it in auxArr2) {
      leafFunc(auxArr2[it]);
@@ -77,7 +73,7 @@ console.log("trnvTwigs called");console.log(leafFunc);
   var nextLevel = function(auxArr) {
    var newArr = [];
    for (var it in auxArr) {
-    newArr.concat(auxArr[it].lk2);
+    newArr=newArr.concat(auxArr[it].lk2);
    }
    return newArr;
   }

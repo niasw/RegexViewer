@@ -15,9 +15,12 @@ indexOf2 = function(array,e){ // search for 2nd element
  return -1;
 }
 var Node = function() {} // pre-declaration of Node class
-Node.allStates=[]; // set Q
-Node.objStates=[]; // data of Q
-Node.finStates=[]; // acceptable states F
+Node.clearAll=function() {
+ Node.allStates=[]; // set Q
+ Node.objStates=[]; // data of Q
+ Node.finStates=[]; // acceptable states F
+}
+Node.clearAll();
 Node.getNullID=function() {
  for (var it=0;it<Node.allStates.length;it+=1) {
   if (Node.allStates.indexOf(it)==-1) {return it;}
@@ -27,7 +30,6 @@ Node.getNullID=function() {
 Node.prototype = { // obj property
  init:function(fin=false) {
   this.idx=Node.getNullID(); // index or identity number
-console.log("init called:"+this.idx);
   this.lk2=[]; // this links to ...
   this.lkf=[]; // this links from ...
   this.fin=fin; // acceptable or not
@@ -37,7 +39,6 @@ console.log("init called:"+this.idx);
   return this;
  },
  lk:function(chr,target) { // link (character, target ID)
-console.log("lk called");
   this.lk2.push([chr,target]);
   Node.objStates[target].lkf.push([chr,this.idx]);
   return this;
