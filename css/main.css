@@ -16,6 +16,33 @@ div.wrapper {
  width: 1024px;
  margin: 0 auto;
 }
+div.wrapper.middle {
+ width: 700px;
+}
+div.wrapper.left {
+ width: 160px;
+}
+div.wrapper.right {
+ width: 160px;
+}
+div.wrapper.middle,
+div.wrapper.left,
+div.wrapper.right {
+ margin: 0;
+ padding: 5;
+/* font-family: Helvetica, Arial, sans-serif; */
+ overflow: hidden;
+}
+div.wrapper.right input,
+div.wrapper.left input {
+ width: 100px;
+ margin: 0 auto;
+}
+div.wrapper.right input.checkbox,
+div.wrapper.left input.checkbox {
+ width: 20px;
+ margin: 0 auto;
+}
 b, strong { font-weight: bold }
 i, em { font-style: italic }
 p {
@@ -45,6 +72,22 @@ ol li {
 .center {
  display: block;
  margin: 0 auto;
+ text-align: center;
+}
+.middle {
+ display: block;
+ margin: 0 auto;
+ text-align: center;
+}
+.left {
+ float: left;
+ margin: 0 auto 0 0;
+ text-align: left;
+}
+.right {
+ float: right;
+ margin: 0 0 0 auto;
+ text-align: right;
 }
 /** svg settings **/
 svg.chart {

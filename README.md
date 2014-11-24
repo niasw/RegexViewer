@@ -23,5 +23,5 @@ Copyright 2014 Sun Sibai <niasw(AT)pku.edu.cn> & Liu Yu & Tian Chuang<br/>
 
 ##References
 
-<http://swtch.com/~rsc/regexp/regexp1.html>
+NFA Theory Inspired by <http://swtch.com/~rsc/regexp/regexp1.html>
 

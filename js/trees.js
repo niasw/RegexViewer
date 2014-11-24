@@ -94,8 +94,28 @@ TreeNode.prototype = { // obj property
     }
    }
    if (brchFunc) {
-    for (var it in auxArr2) {
+    for (var it in auxArr0) {
      brchFunc(auxArr0[it]);
+    }
+   }
+  }
+  return true; // succeeded
+ },
+ trnvAll:function(func) { // special algorithm for strict balanced tree. traversal the entire tree.
+  var nextLevel = function(auxArr) {
+   var newArr = [];
+   for (var it in auxArr) {
+    newArr=newArr.concat(auxArr[it].lk2);
+   }
+   return newArr;
+  }
+  var auxArr=[this];
+  func(auxArr[0]);
+  while (auxArr[0].lk2.length>0) { // watchout: strict balanced tree only
+   auxArr=nextLevel(auxArr);
+   if (func) {
+    for (var it in auxArr) {
+     func(auxArr[it]);
     }
    }
   }

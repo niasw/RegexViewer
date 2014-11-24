@@ -1,17 +1,13 @@
 /** Apache License 2.0 Applies for Code Here **/
 /** @author Sun Sibai & Liu Yu & Tian Chuang **/
-function parseRegex(pattern) {
- Node.clearAll();
- var q0=new Node().init().idx; // start state
- var ptnidx=0; // character index parsing
- var ptnchr; // character parsing
- var domCurPos=document.getElementById("currentPos");
- var bktTree=new TreeNode().init(q0); // (aux tree) to save brackets
- bktTree.lk1(new TreeNode().init(q0));
- bktTree.lk2[0].lk1(new TreeNode().init(q0)); // q0->q0->q0 represents (("") state
- while (ptnidx<pattern.length) {
-  ptnchr=pattern[ptnidx];
-  domCurPos.textContent=ptnchr.toString(); // domCurPos.setProperty('text',ptnchr.toString());
+var ptnidx=0; // treat it as static var limited within this script file please,
+var ptnstr=""; // and this one as well.
+var bktTree; // aux bracket tree
+var q0; // starter state
+var domCurPos=document.getElementById("currentPos");
+function parseStepRegex() {
+ if (ptnidx<ptnstr.length) {
+  var ptnchr=ptnstr[ptnidx]; // character parsing
   switch (ptnchr) {
   case '(': // (...(...(p) => (...(......(("")
    bktTree.trnvTwigs(function(node){node.rm();},function(node){
@@ -57,16 +53,48 @@ function parseRegex(pattern) {
   }
   ptnidx+=1;
  }
- bktTree.trnvTwigs(undefined,function(node){
-  Node.objStates[node.idx].setFinal(true);
- });
-
+}
+// function parseBackRegex(ptnidx,ptnchr){} // ISSUE: It is impossible to traceback for the case '*',')','|' unless record all the process.
+function parseStartRegex(pattern) {
+ ptnidx=0; // character index parsing
+ ptnstr=pattern; // pattern string to be parsed
+ Node.clearAll(); // reset nodes
+ q0=new Node().init().idx; // start state
+ bktTree=new TreeNode().init(q0); // (aux tree) to save brackets
+ bktTree.lk1(new TreeNode().init(q0));
+ bktTree.lk2[0].lk1(new TreeNode().init(q0)); // q0->q0->q0 represents (("") state
+ delgraph();drawinit(); // rebuild svg
+ setdrawpara();drawinitnodes();drawinitmarks();drawinitlinks();
+}
+function parseFinalRegex() {
+ if (ptnidx==ptnstr.length) {
+  bktTree.trnvTwigs(undefined,function(node){
+   Node.objStates[node.idx].setFinal(true);
+  });
+  domCurPos.textContent="Over~(^u^)";
+  ptnidx+=1; // Final Done.
+  drawfinal();
+  d3.selectAll('.marks').remove(); // clear marks
+ }
+}
+function parseTryStepRegex() {
+ if (ptnidx<ptnstr.length) {
+  var ptnchr=ptnstr[ptnidx]; // character parsing
+  domCurPos.textContent=ptnchr.toString(); // domCurPos.setProperty('text',ptnchr.toString());
+  parseStepRegex();
+ } else {
+  parseFinalRegex();
+ }
+debugdump(); //FIXME: DEBUG
+delgraph();drawinit();setdrawpara();drawinitnodes();drawinitlinks();if (ptnidx>ptnstr.length) {drawfinal();} else {drawinitmarks();} //FIXME: DEBUG
+}
 // DEBUG USE
- var domRegRes=document.getElementById("regexResult");
- domRegRes.textContent="q0="+q0+"\n"+"allState="+Node.allStates+"\n"+"objState="+Node.objStates+"\n"+"finState="+Node.finStates;
-console.log("q0=");console.log(q0);
-console.log("allState=");console.log(Node.allStates);
-console.log("objState=");console.log(Node.objStates);
-console.log("finState=");console.log(Node.finStates);
-console.log("auxTree=");console.log(bktTree);
+function debugdump() {
+var domRegRes=document.getElementById("regexResult");
+domRegRes.textContent="q0="+q0+"\n"+"#allState="+Node.allStates.length+"\n"+"finState="+Node.finStates;
+//console.log("q0=");console.log(q0);
+//console.log("allState=");console.log(Node.allStates);
+//console.log("objState=");console.log(Node.objStates);
+//console.log("finState=");console.log(Node.finStates);
+//console.log("auxTree=");console.log(bktTree);
 }

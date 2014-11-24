@@ -7,23 +7,34 @@
  <link rel="license" href="Apache License 2.0">
  <link rel="icon" href="res/icon.png">
  <title>Regex Viewer --- View Regular Expressions in Graph to Easily Understand the Matching Process, and Build the Regex You Want.</title>
-</head><body>
+</head><body onkeypress="javascript:keypress(event);">
  <div class="wrapper"><p class="center" style="width:700px;text-align:left;line-height:1pt;padding:0;"><b>RegexViewer</b></p><p class="center" style="width:700px;text-align:right;line-height:1pt;padding:0 0 10px 0;">@author <i>Sun Sibai</i> &amp; <i>Liu Yu</i> &amp; <i>Tian Chuang</i> </p></div>
  <!--<script src="http://d3js.org/d3.v3.min.js"></script>-->
  <script src="lib/d3.min.js"></script>
- <div class="wrapper"><form class="center" style="text-align:center;">
-  Pattern (RegExp) = <input type="text" id="pattern" value="" onkeydown="javascript:if (event.keyCode==13) {this.select();parseRegex(this.value);this.blur();}"/>
-  <input type="button" value="Build Nodes" onclick="javascript:parseRegex(document.getElementById('pattern').value);"/><br/>
-  Content (String) = <input type="text" id="content" value="" onkeydown="javascript:if (event.keyCode==13) {this.select();checkMatch(this.value);this.blur();}"/>
-  <input type="button" value="Check Match" onclick="javascript:checkMatch(document.getElementById('content').value);"/><br/>
+<div class="wrapper">
+ <div class="left wrapper"><form class="center" style="text-align:center;">
+  Pattern (RegExp) = <input type="text" id="pattern" value="" onkeydown="javascript:if (event.keyCode==13) {this.select();parseStartRegex(this.value);this.blur();}"/>
+  <input type="button" value="Build Nodes" onclick="javascript:parseStartRegex(document.getElementById('pattern').value);"/><br/>
+  Content (String) = <input type="text" id="content" value="" onkeydown="javascript:if (event.keyCode==13) {this.select();checkStartMatch(this.value);this.blur();}"/>
+  <input type="button" value="Check Match" onclick="javascript:checkStartMatch(document.getElementById('content').value);"/><br/>
+  <input type="checkbox" class="checkbox" id="limStt" value="Strict Start" name="limStt">Strict Start</input><br/>
+  <input type="checkbox" class="checkbox" id="limFnl" value="Strict Final" name="limFnl">Strict Final</input><br/>
+  <input type="checkbox" class="checkbox" value="Anime Nodes" onclick="javascript:animeNodes();">Moving Nodes</input><br/>
  </form></div>
- <div class="wrapper"><span class="center" style="text-align:center;">
-  Result RegEx : <pre id="regexResult"></pre>
+ <div class="right wrapper"><span class="center" style="text-align:center;">
+  Result RegEx : <p id="regexResult"></p>
   Result Match : <p id="matchResult"></p>
-  Now Dealing : <pre id="currentPos"></pre> Press &lt;- &amp; -&gt; to Navigate.<br/>
+  Now Dealing : <p id="currentPos"></p>
+  Press <br/> <b>Enter</b> or <b>-&gt;</b> <br/> to Step Forward. <br/>
  </span></div>
+ <div class="center wrapper" id="canvas"></div>
+</div>
  <script src="js/preinit.js"></script>
  <script src="js/nodes.js"></script>
- <script src="js/tree.js"></script>
+ <script src="js/trees.js"></script>
+ <script src="js/draw.js"></script>
  <script src="js/parse.js"></script>
+ <script src="js/keys.js"></script>
+ <script src="js/main.js"></script>
+ <script src="js/anime.js"></script>
 </body></html>
