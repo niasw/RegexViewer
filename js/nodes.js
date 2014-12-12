@@ -8,9 +8,9 @@ if (!Array.prototype.indexOf) { // for old javascript
   return -1;
  }
 }
-indexOf2 = function(array,e){ // search for 2nd element
+indexOf0 = function(array,e){ // search for 1st element
  for(var i=0; i<array.length; i+=1){
-  if(array[i][1]==e){return i;}
+  if(array[i][0]==e){return i;}
  }
  return -1;
 }
@@ -38,9 +38,10 @@ Node.prototype = { // obj property
   if (fin) {Node.finStates.push(this.idx);}
   return this;
  },
- lk:function(chr,target) { // link (character, target ID)
-  this.lk2.push([chr,target]);
-  Node.objStates[target].lkf.push([chr,this.idx]);
+ lk:function(target,chr=undefined) { // link (target ID, character) character=undefined for non-operation transition
+ /* It is necessary introduce non-operation transition for the monodirect property we need here. e.g. for 'a*b*', having b should be different from no b state since no more a can be appended. */
+  this.lk2.push([target,chr]);
+  Node.objStates[target].lkf.push([this.idx,chr]);
   return this;
  },
  rm:function() { // remove
@@ -49,6 +50,28 @@ Node.prototype = { // obj property
    thsPos=indexOf2(Node.objStates[this.lkf[it][1]].lk2,this.idx);
    if (thsPos>-1) {Node.objStates[this.lkf[it][1]].lk2.splice(thsPos,1);} // kick it out from array
   }
+  for (it in this.lk2) {
+   thsPos=indexOf2(Node.objStates[this.lkf[it][1]].lk2,this.idx);
+   if (thsPos>-1) {Node.objStates[this.lkf[it][1]].lk2.splice(thsPos,1);} // kick it out from array
+  }
+  thsPos=Node.allStates.indexOf(this.idx);
+  if (thsPos>-1) {Node.allStates.splice(thsPos,1);}
+  Node.objStates[this.idx]=undefined;
+  return this.idx; // break chains
+ },
+ smrm:function() { // smooth remove: without breaking chains (warning: self-linking will be lost)
+  var thsPos;
+  for (it in this.lkf) {
+   thsPos=indexOf0(Node.objStates[this.lkf[it][0]].lk2,this.idx);
+   if (thsPos>-1) {Node.objStates[this.lkf[it][0]].lk2.splice(thsPos,1);} // kick it out from array
+  }
+  for (it in this.lk2) {
+   thsPos=indexOf0(Node.objStates[this.lkf[it][0]].lk2,this.idx);
+   if (thsPos>-1) {Node.objStates[this.lkf[it][0]].lk2.splice(thsPos,1);} // kick it out from array
+  }
+  for (itf in this.lkf) { for (it2 in this.lk2) {
+   Node.objStates[this.lkf[itf][0]].lk(this.lk2[it2][0],this.lkf[itf][1]);
+  }}
   thsPos=Node.allStates.indexOf(this.idx);
   if (thsPos>-1) {Node.allStates.splice(thsPos,1);}
   Node.objStates[this.idx]=undefined;

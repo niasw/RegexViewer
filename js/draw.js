@@ -1,7 +1,7 @@
 /** Apache License 2.0 Applies for Code Here **/
 /** @author Sun Sibai & Liu Yu & Tian Chuang **/
 var ndp=[]; // [{'x':x of node, 'y':y of node},...]
-//var lks=[]; // [{'c':char of link, 'f':from, 't':to, 'a':if self-link => angle}]
+//var lks=[]; // [{'c':char of link, 'f':from, 't':to}]
 var linefun=d3.svg.line().x(function(d) {return d.x;}).y(function(d) {return d.y;}).interpolate('linear'); // polygonal lines
 var linefunc=d3.svg.line().x(function(d) {return d.x;}).y(function(d) {return d.y;}).interpolate('basis'); // B-spline curve
 var M_PI=3.14159265358979;
@@ -51,12 +51,12 @@ function drawinitlinks() { // first drawing links
  for (var itn in Node.allStates) {
   var tmpArr=Node.objStates[Node.allStates[itn]].lk2;
   for (var itl in tmpArr) {
-   if (Node.allStates[itn]!=Node.allStates[tmpArr[itl][1]]) {
-    if (indexOf2(Node.objStates[Node.allStates[tmpArr[itl][1]]].lk2,Node.allStates[itn])==-1) { // no direct loop
-     d3.select('svg').insert('path',':first-child').attr('class','sline').attr('d',linefun(linkTri(ndp[Node.allStates[itn]],ndp[Node.allStates[tmpArr[itl][1]]],circler/2)));
-     d3.select('svg').insert('text',':first-child').attr('class','sline').attr('x',(ndp[Node.allStates[itn]].x+ndp[Node.allStates[tmpArr[itl][1]]].x)/2).attr('y',(ndp[Node.allStates[itn]].y+ndp[Node.allStates[tmpArr[itl][1]]].y)/2).text(tmpArr[itl][0]);
+   if (Node.allStates[itn]!=tmpArr[itl][1]) {
+    if (indexOf0(Node.objStates[tmpArr[itl][1]].lk2,Node.allStates[itn])==-1) { // no direct loop
+     d3.select('svg').insert('path',':first-child').attr('class','sline').attr('d',linefun(linkTri(ndp[Node.allStates[itn]],ndp[tmpArr[itl][1]],circler/2)));
+     d3.select('svg').insert('text',':first-child').attr('class','sline').attr('x',(ndp[Node.allStates[itn]].x+ndp[tmpArr[itl][1]].x)/2).attr('y',(ndp[Node.allStates[itn]].y+ndp[tmpArr[itl][1]].y)/2).text(tmpArr[itl][0]);
     } else { // direct loop
-     var pts=linkCrv2(ndp[Node.allStates[itn]],ndp[Node.allStates[tmpArr[itl][1]]],circler*2,circler/4);
+     var pts=linkCrv2(ndp[Node.allStates[itn]],ndp[tmpArr[itl][1]],circler*2,circler/4);
      d3.select('svg').insert('path',':first-child').attr('class','sline').attr('d',linefunc(pts));
      d3.select('svg').insert('text',':first-child').attr('class','sline').attr('x',pts[1].x).attr('y',pts[1].y+0.4*txtsize).text(tmpArr[itl][0]);
     }
@@ -69,20 +69,16 @@ function drawinitlinks() { // first drawing links
  }
 }
 function drawinitmarks() { // first drawing braket marks
- bktTree.trnvAll(function(node){
-  var txt=d3.select('svg').append('text').attr('class','marks').attr('y',ndp[Node.allStates[node.idx]].y+txtsize/2.7);
-  if (node.lk2.length==0) { // leaf
-   txt.attr('x',ndp[Node.allStates[node.idx]].x+txtsize*1.2).text(')');
-  } else if (node.lk2[0].lk2.length==0) { // twig
-   txt.attr('x',ndp[Node.allStates[node.idx]].x-txtsize*1.2).text('(');
-  } else { // brch
-   txt.attr('x',ndp[Node.allStates[node.idx]].x-txtsize*1.2).text('{');
-  }
- });
+ d3.select('svg').selectAll('text.markBBL').data(bktStack).enter()
+   .append('text').attr('class','markBBL').attr('x',function(d){return ndp[d[0]].x-txtsize*1.2;}).attr('y',function(d){return ndp[d[0]].y+txtsize/2.7;}).text('{');
+ d3.select('svg').selectAll('text.markBBR').data(bktStack).enter()
+   .append('text').attr('class','markBBR').attr('x',function(d){return ndp[d[1]].x+txtsize*1.2;}).attr('y',function(d){return ndp[d[1]].y+txtsize/2.7;}).text('}');
+ d3.select('svg').append('text').attr('class','markBL').attr('x',ndp[bktUsing[0]].x-txtsize*1.2).attr('y',ndp[bktUsing[0]].y+txtsize/2.7).text('(');
+ d3.select('svg').append('text').attr('class','markBR').attr('x',ndp[bktUsing[1]].x+txtsize*1.2).attr('y',ndp[bktUsing[1]].y+txtsize/2.7).text(')');
 }
 function drawfinal() { // first marking final states
  d3.select('svg').selectAll('circle.final').data(Node.finStates).enter() // add final marks
-  .append('circle').attr('class','final').attr('cx',function(d){return ndp[Node.allStates[d]].x;}).attr('cy',function(d){return ndp[Node.allStates[d]].y;}).attr('r',circler*1.3);
+  .append('circle').attr('class','final').attr('cx',function(d){return ndp[d].x;}).attr('cy',function(d){return ndp[Node.allStates[d]].y;}).attr('r',circler*1.3);
 }
 function modifynodes() { // modify nodes location
  d3.select('svg').selectAll('circle.nodes').data(Node.allStates).attr('cx',function(d){return ndp[d].x;}).attr('cy',function(d){return ndp[d].y;});
