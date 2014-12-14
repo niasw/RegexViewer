@@ -1,39 +1,70 @@
 <!DOCTYPE HTML>
 <html><head>
- <meta charset="gbk">
+ <meta charset="utf-8">
  <meta name="author" content="Sun Sibai & Liu Yu & Tian Chuang">
  <meta name="keywords" content="regex visualize finite automaton">
  <link rel="stylesheet" type="text/css" href="css/main.css">
  <link rel="license" href="Apache License 2.0">
  <link rel="icon" href="res/icon.png">
- <title>Regex Viewer --- View Regular Expressions in Graph to Easily Understand the Matching Process, and Build the Regex You Want.</title>
-</head><body onkeypress="javascript:keypress(event);">
- <div class="wrapper"><p class="center" style="width:700px;text-align:left;line-height:1pt;padding:0;"><b>RegexViewer</b></p><p class="center" style="width:700px;text-align:right;line-height:1pt;padding:0 0 10px 0;">@author <i>Sun Sibai</i> &amp; <i>Liu Yu</i> &amp; <i>Tian Chuang</i> </p></div>
- <!--<script src="http://d3js.org/d3.v3.min.js"></script>-->
- <script src="lib/d3.min.js"></script>
+ <title>Regex Viewer --- View Regular Expressions in Graph to Easily Understand the Matching Process.</title>
+</head><body onkeypress="javascript:KeySet.keypress(event);">
+ <div class="wrapper"><p class="center" style="width:1024px;text-align:left;line-height:1pt;padding:0;"><b>RegexViewer</b></p><p class="center" style="width:1024px;text-align:right;line-height:1pt;padding:0 0 10px 0;">@author <i>Liu Yu</i> &amp; <i>Sun Sibai</i> &amp; <i>Tian Chuang</i> &amp; <i>Zhuo Junbao</i> &amp; <i>Zhuo Aonan</i> </p></div>
+ <div class="wrapper"><p class="center" style="width:1024px;text-align:center;line-height:15pt;padding:5;">
+Press <b>Enter</b> or <b>-&gt;</b> to Step Forward.
+ </p></div>
 <div class="wrapper">
- <div class="left wrapper"><form class="center" style="text-align:center;">
-  Pattern (RegExp) = <input type="text" id="pattern" value="" onkeydown="javascript:if (event.keyCode==13) {this.select();parseStartRegex(this.value);this.blur();}"/>
-  <input type="button" value="Build Nodes" onclick="javascript:parseStartRegex(document.getElementById('pattern').value);"/><br/>
-  Content (String) = <input type="text" id="content" value="" onkeydown="javascript:if (event.keyCode==13) {this.select();checkStartMatch(this.value);this.blur();}"/>
-  <input type="button" value="Check Match" onclick="javascript:checkStartMatch(document.getElementById('content').value);"/><br/>
+ <div class="left wrapper"><form class="center" style="text-align:center;" onclick="javascript:Context.refresh();">
+  Pattern (RegExp) = <input type="text" id="ptnTxtEdt" value="" onkeydown="javascript:if (event.keyCode==13) {this.select();Context.ParsePro.init(this.value);this.blur();}"/>
+  <input type="button" value="Build Nodes" onclick="javascript:Context.ParsePro.init(document.getElementById('ptnTxtEdt').value);"/><br/><br/>
+  Content (String) = <input type="text" id="strTxtEdt" value="" onkeydown="javascript:if (event.keyCode==13) {this.select();Context.MatchPro.init(this.value);this.blur();}"/>
+  <input type="button" value="Check Match" onclick="javascript:Context.MatchPro.init(document.getElementById('strTxtEdt').value);"/><br/>
+  <br/>Match Option<br/>
   <input type="checkbox" class="checkbox" id="limStt" value="Strict Start" name="limStt">Strict Start</input><br/>
   <input type="checkbox" class="checkbox" id="limFnl" value="Strict Final" name="limFnl">Strict Final</input><br/>
-  <input type="checkbox" class="checkbox" value="Anime Nodes" onclick="javascript:animeNodes();">Moving Nodes</input><br/>
+  <br/>Parsing Method<br/>
+  <input type="radio" class="radio" name="parse" value="SWparser" checked="checked">Direct Parse</input><br/>
+  <input type="radio" class="radio" name="parse" value="LYparser">Grammar Tree</input><br/>
+  <br/>Graph Type<br/>
+  <input type="radio" class="radio" name="graph" value="ENFA" checked="checked">ϵ-NFA Graph</input><br/>
+  <input type="radio" class="radio" name="graph" value="NFA"> NFA Graph </input><br/>
+  <input type="radio" class="radio" name="graph" value="DFA"> DFA Graph </input><br/>
+  <br/>Navigation<br/>
+  <input type="radio" class="radio" name="navi" value="man" checked="checked"> Manual </input><br/>
+  <input type="radio" class="radio" name="navi" value="aut">Auto Trace</input><br/>
+  <input type="radio" class="radio" name="navi" value="run"> Run Fast </input><br/>
+  <br/>
  </form></div>
  <div class="right wrapper"><span class="center" style="text-align:center;">
-  Result RegEx : <p id="regexResult"></p>
-  Result Match : <p id="matchResult"></p>
-  Now Dealing : <p id="currentPos"></p>
-  Press <br/> <b>Enter</b> or <b>-&gt;</b> <br/> to Step Forward. <br/>
+  Result RegEx : <div id="regexResult"></div>
+  Result Match : <div id="matchResult"></div>
+  Now Dealing : <div id="currentPos"></div> <br/>
  </span></div>
  <div class="center wrapper" id="canvas"></div>
 </div>
- <script src="js/preinit.js"></script>
- <script src="js/nodes.js"></script>
- <script src="js/draw.js"></script>
- <script src="js/parse.js"></script>
- <script src="js/keys.js"></script>
- <script src="js/main.js"></script>
- <script src="js/anime.js"></script>
+ <!--<script src="http://d3js.org/d3.v3.min.js"></script>-->
+ <script src="lib/hashtable.min.js"></script>
+ <script src="lib/hashset.min.js"></script>
+ <script src="lib/jison.min.js"></script>
+ <script src="lib/d3.min.js"></script>
+ <script src="js/kernel/utils.js"></script>
+ <script src="js/kernel/parser.js"></script>
+ <script src="js/kernel/fa.js"></script>
+ <script src="js/kernel/swnodes.js"></script>
+ <script src="js/kernel/swparse.js"></script>
+ <script src="js/model/swmodel.js"></script>
+ <script src="js/model/swgraph.js"></script>
+ <script src="js/model/swparser.js"></script>
+ <script src="js/model/lyparser.js"></script>
+ <script src="js/control/swinput.js"></script>
+ <script src="js/ui/swconst.js"></script>
+ <script src="js/view/swdraw.js"></script>
+ <script src="js/control/swparserun.js"></script>
+ <!--<script src="js/control/swmatchrun.js"></script>-->
+ <script src="js/ui/swkeys.js"></script>
+ <script src="js/ui/swui.js"></script>
+<div class="center wrapper"><p class="center" style="width:1024px;text-align:center;line-height:15pt;padding:5;">
+  This project uses
+  <a href="http://d3js.org">d3</a>, Tim Down's hashset, <a href="http://jison.org/">jison</a> and
+  <a href="https://code.google.com/p/jshashtable/">jshashtable</a>.
+</p></div>
 </body></html>

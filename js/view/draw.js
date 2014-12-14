@@ -51,7 +51,7 @@ function drawinitlinks() { // first drawing links
  for (var itn in Node.allStates) {
   var tmpArr=Node.objStates[Node.allStates[itn]].lk2;
   for (var itl in tmpArr) {
-   if (Node.allStates[itn]!=tmpArr[itl][1]) {
+   if (tmpArr[itl][1]&&Node.allStates[itn]!=tmpArr[itl][1]) {
     if (indexOf0(Node.objStates[tmpArr[itl][1]].lk2,Node.allStates[itn])==-1) { // no direct loop
      d3.select('svg').insert('path',':first-child').attr('class','sline').attr('d',linefun(linkTri(ndp[Node.allStates[itn]],ndp[tmpArr[itl][1]],circler/2)));
      d3.select('svg').insert('text',':first-child').attr('class','sline').attr('x',(ndp[Node.allStates[itn]].x+ndp[tmpArr[itl][1]].x)/2).attr('y',(ndp[Node.allStates[itn]].y+ndp[tmpArr[itl][1]].y)/2).text(tmpArr[itl][0]);
@@ -72,7 +72,7 @@ function drawinitmarks() { // first drawing braket marks
  d3.select('svg').selectAll('text.markBBL').data(bktStack).enter()
    .append('text').attr('class','markBBL').attr('x',function(d){return ndp[d[0]].x-txtsize*1.2;}).attr('y',function(d){return ndp[d[0]].y+txtsize/2.7;}).text('{');
  d3.select('svg').selectAll('text.markBBR').data(bktStack).enter()
-   .append('text').attr('class','markBBR').attr('x',function(d){return ndp[d[1]].x+txtsize*1.2;}).attr('y',function(d){return ndp[d[1]].y+txtsize/2.7;}).text('}');
+   .append('text').attr('class','markBBR').attr('x',function(d){if (d[1]) {return ndp[d[1]].x+txtsize*1.2;} else {return undefined;}}).attr('y',function(d){if (d[1]) {return ndp[d[1]].y+txtsize/2.7;} else {return undefined;}}).text('}');
  d3.select('svg').append('text').attr('class','markBL').attr('x',ndp[bktUsing[0]].x-txtsize*1.2).attr('y',ndp[bktUsing[0]].y+txtsize/2.7).text('(');
  d3.select('svg').append('text').attr('class','markBR').attr('x',ndp[bktUsing[1]].x+txtsize*1.2).attr('y',ndp[bktUsing[1]].y+txtsize/2.7).text(')');
 }

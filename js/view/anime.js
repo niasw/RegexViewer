@@ -30,7 +30,7 @@ function updateLocation() {
   }
   var tmpArr=Node.objStates[Node.allStates[itn]].lk2;
   for (var itl in tmpArr) { // linking attraction to sort nodes
-   if (Node.allStates[itn]!=Node.allStates[tmpArr[itl][1]]) {
+   if (tmpArr[itl][1]&&Node.allStates[itn]!=Node.allStates[tmpArr[itl][1]]) {
     dp.x=ndp[Node.allStates[itn]].x-ndp[Node.allStates[tmpArr[itl][1]]].x;
     dp.y=ndp[Node.allStates[itn]].y-ndp[Node.allStates[tmpArr[itl][1]]].y;
     dd=Math.sqrt(dp.x*dp.x+dp.y*dp.y)+0.1;

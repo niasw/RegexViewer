@@ -1,16 +1,16 @@
 body {
-    font-family: Courier, WenQuanYiHei, monospace;
-    min-height: 740px;
+ font-family: Courier, WenQuanYiHei, monospace;
+ min-height: 740px;
 
-    background: rgb(255, 255, 170);
-    background: -webkit-gradient(radial, 50% 50%, 0, 50% 50%, 1000, from(rgb(255, 250, 170)), to(rgb(230, 200, 100)));
-    background: -webkit-radial-gradient(rgb(255, 250, 170), rgb(230, 200, 100));
-    background:    -moz-radial-gradient(rgb(255, 250, 170), rgb(230, 200, 100));
-    background:     -ms-radial-gradient(rgb(255, 250, 170), rgb(230, 200, 100));
-    background:      -o-radial-gradient(rgb(255, 250, 170), rgb(230, 200, 100));
-    background:         radial-gradient(rgb(255, 250, 170), rgb(230, 200, 100));
+ background: rgb(180, 170, 255);
+ background: -webkit-gradient(radial, 50% 50%, 0, 50% 50%, 1000, from(rgb(180, 170, 250)), to(rgb(130, 100, 200)));
+ background: -webkit-radial-gradient(rgb(180, 170, 250), rgb(130, 100, 200));
+ background:    -moz-radial-gradient(rgb(180, 170, 250), rgb(130, 100, 200));
+ background:     -ms-radial-gradient(rgb(180, 170, 250), rgb(130, 100, 200));
+ background:      -o-radial-gradient(rgb(180, 170, 250), rgb(130, 100, 200));
+ background:         radial-gradient(rgb(180, 170, 250), rgb(130, 100, 200));
 
-    color: rgb(80, 40, 0);
+ color: rgb(255, 255, 250);
 }
 div.wrapper {
  width: 1024px;
@@ -39,7 +39,9 @@ div.wrapper.left input {
  margin: 0 auto;
 }
 div.wrapper.right input.checkbox,
-div.wrapper.left input.checkbox {
+div.wrapper.left input.checkbox,
+div.wrapper.right input.radio,
+div.wrapper.left input.radio {
  width: 20px;
  margin: 0 auto;
 }
@@ -61,7 +63,7 @@ a,a:link,a:visited {
  color: inherit;
 }
 a:hover,a:active {
- color: rgb(120, 80, 0);
+ color: rgb(80,80,120);
 }
 ol, ul,
 ul li,
@@ -91,13 +93,13 @@ ol li {
 }
 /** svg settings **/
 svg.chart {
- border: solid, 1px, rgb(80, 40, 0);
+ border: solid, 1px, rgb(255, 255, 250);
 }
 svg.chart * {
  stroke-width: 3pt;
- stroke: rgb(80, 40, 0);
+ stroke: rgb(255, 255, 250);
  fill: none;
- color: rgb(80, 40, 0);
+ color: rgb(255, 255, 250);
  font-size: 18pt;
  text-anchor: middle;
 }
@@ -106,17 +108,16 @@ svg.chart *.erase {
  stroke: none;
 }
 svg.chart text,
-svg.chart *.sline {
+svg.chart *.links {
  font-family: Helvetica, Arial, WenQuanYiHei, sans-serif;
  font-size: 14pt;
  stroke-width: 1pt;
 }
-svg.chart path.sline {
- fill: rgba(80, 40, 0, .3);
- stroke: rgba(80, 40, 0, .3);
+svg.chart path.links {
+ fill: none;
+ stroke: rgba(255,255,250,.3);
 }
-svg.chart polygon.sline {
- fill: rgba(80, 40, 0, .1);
- stroke: rgba(80, 40, 0, .1);
+svg.chart circle.cursor {
+ stroke: none;
+ fill: none;
 }
-
