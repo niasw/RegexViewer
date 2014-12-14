@@ -3,6 +3,7 @@
 
 /** View **/
 /**   dependency: ui/swconst.js **/
+/**   dependency: model/swgraph.js (indexOfidx)**/
 /**   dependency: /lib/d3.min.js **/
 var Draw={};
 
@@ -32,6 +33,7 @@ Draw.tick=function() {
 Draw.layout=d3.layout.force().size([Const.wid, Const.hgh]).nodes([]).linkDistance(Const.noddist).charge(Const.strngth).on("tick",Draw.tick);
 
 // mouse cursor
+Draw.mouse=[-100,-100];
 Draw.canvas.append("defs").append("radialGradient").attr("id","cursor-grad")
  .attr("gradientUnits","userSpaceOnUse").attr("cx",0).attr("cy",0).attr("fx",0).attr("fy",0).attr("r",30)
  .selectAll("stop").data([
@@ -42,12 +44,13 @@ Draw.canvas.append("defs").append("radialGradient").attr("id","cursor-grad")
  .attr("stop-color",function(d) {return d.color;});
 Draw.cursor=Draw.canvas.append("circle").attr("class","cursor").attr("r",30).attr("transform","translate(-100,-100)").style("fill","url(#cursor-grad)"); // cursor enhance
 Draw.mousemove=function() { // use d3 interface, large cursor
- Draw.cursor.attr("transform","translate("+d3.mouse(this)+")");
+ Draw.mouse=d3.mouse(this);
+ Draw.cursor.attr("transform","translate("+Draw.mouse+")");
 }
 Draw.canvas.on("mousemove",Draw.mousemove);
 Draw.mousedown=function() { // use d3 interface, pa da ~
- var pos=d3.mouse(this);
- Draw.cursor.attr("transform","translate("+[pos[0],pos[1]+3]+")");
+ Draw.mouse=d3.mouse(this);
+ Draw.cursor.attr("transform","translate("+[Draw.mouse[0],Draw.mouse[1]+3]+")");
  Draw.refresh();
 }
 Draw.canvas.on("mousedown",Draw.mousedown);
@@ -57,7 +60,6 @@ Draw.canvas.on("mouseup",Draw.mousemove);
 Draw.linkcolor=d3.interpolateLab("#f0f0ff","#7f7faf"); //https://gist.github.com/mbostock/4163057 , http://blog.csdn.net/lzhlzz/article/details/41808231
 
 // nodes initialize
-//TODO: should acquire variation instead of whole graph.
 Draw.refresh=function() {
  Draw.links=Draw.links.data(Draw.layout.links());
  Draw.links.enter().insert('line','.nodes').attr('class','links').style('opacity',0).transition().duration(500).style('opacity',1);
@@ -65,23 +67,30 @@ Draw.refresh=function() {
  Draw.lktxt=Draw.lktxt.data(Draw.layout.links()).text(function(d) {return d.char;});
  Draw.lktxt.enter().insert('text','.lktxt').attr('class','lktxt').text(function(d) {return d.char;}).style('opacity',0).transition().duration(500).style('opacity',1);
  Draw.lktxt.exit().transition().duration(500).style('opacity',0).remove();
- Draw.nodes=Draw.nodes.data(Draw.layout.nodes()).style('fill',function(d) {return Draw.linkcolor(0.5-Math.sqrt(d.phase)/8);});
+ Draw.nodes=Draw.nodes.data(Draw.layout.nodes(),function(d) {return d.id;}).style('fill',function(d) {return Draw.linkcolor(0.5-Math.sqrt(d.phase)/8);});
  Draw.nodes.enter().insert('circle','.nodes').attr('class','nodes').style('fill',function(d) {return Draw.linkcolor(0.5-Math.sqrt(d.phase)/8);}).attr('r',0).transition().duration(500).attr('r',Const.circler);
  Draw.nodes.exit().transition().duration(500).attr("r",0).remove();
  Draw.nodes.call(Draw.layout.drag);
- Draw.ndtxt=Draw.ndtxt.data(Draw.layout.nodes()).text(function(d) {return d.index;});
- Draw.ndtxt.enter().insert('text','.ndtxt').attr('class','ndtxt').text(function(d) {return d.index;}).style('opacity',0).transition().duration(500).style('opacity',1);
+ Draw.ndtxt=Draw.ndtxt.data(Draw.layout.nodes(),function(d) {return d.id;}).text(function(d) {return d.id;});
+ Draw.ndtxt.enter().insert('text','.ndtxt').attr('class','ndtxt').text(function(d) {return d.id;}).style('opacity',0).transition().duration(500).style('opacity',1);
  Draw.ndtxt.exit().transition().duration(500).attr("r",0).remove();
  Draw.layout.start();
 }
 Draw.refresh();
 Draw.drawgraph=function(nodesAndLinks) { // FIXME: should acquire variation instead of whole graph.
  for (it in nodesAndLinks.nodes) {
-  nodesAndLinks.nodes[it].x=Const.wid/2+Math.random(100);
-  nodesAndLinks.nodes[it].y=Const.hgh/2+Math.random(100);
+  var tmp1=indexOfidx(Draw.layout.nodes(),nodesAndLinks.nodes[it].id);
+  var tmp2=nodesAndLinks.nodes[it];
+  if (tmp1==-1) {
+   tmp2.x=Draw.mouse[0]+Math.random(20)-10;tmp2.y=Draw.mouse[1]+Math.random(20)-10;
+  } else {
+   tmp2.x=Draw.layout.nodes()[tmp1].x;tmp2.y=Draw.layout.nodes()[tmp1].y;
+  }
  }
- Draw.layout.nodes(nodesAndLinks.nodes);
  console.log(nodesAndLinks.nodes);
+ console.log(Draw.layout.nodes());
+ Draw.layout.nodes(nodesAndLinks.nodes);
+ console.log(Draw.layout.nodes());
  for (it in nodesAndLinks.links) {
   nodesAndLinks.links[it].source=nodesAndLinks.nodes[nodesAndLinks.links[it].source];
   nodesAndLinks.links[it].target=nodesAndLinks.nodes[nodesAndLinks.links[it].target];

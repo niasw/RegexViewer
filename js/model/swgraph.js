@@ -6,19 +6,19 @@
 /**  related js: kernel/fa.js **/
 indexOfidx = function(array,e){ // search for index coupling
  for(var i=0; i<array.length; i+=1){
-  if(array[i].index==e){return i;}
+  if(array[i].id==e){return i;}
  }
  return -1;
 }
 
 Model.nodes_links=function(snapshot) {
  var nodes=[];
- var links=[]; // warning: "source" and "target" are just index of array nodes. not the "index" in the dict
+ var links=[]; // warning: "source" and "target" are just index of array nodes. not the "id" in the dict
  var pos;
  var num=0;
  for (it0 in snapshot) { // may have many graphs
   for (it1 in snapshot[it0].states) {
-   nodes.push({"index":it1,"entry":false,"final":false,"phase":snapshot[it0].states[it1].phase});
+   nodes.push({"id":it1,"entry":false,"final":false,"phase":snapshot[it0].states[it1].phase});
   }
  }
  for (it0 in snapshot) { // may have many graphs
