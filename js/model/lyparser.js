@@ -6,6 +6,7 @@
 /**  dependency: kernel/fa.js **/
 /**  dependency: model/swmodel.js **/
 Model.LYparser=function(pattern='') {
+console.log('thisbuild');
  this.title="LYparser";
  this.pattern=pattern;
  this.mode=Model.GRAPH.ENFA;
@@ -19,7 +20,7 @@ Model.LYparser=function(pattern='') {
  this.DFAbuilder=undefined; // in beginning, not available yet
 };
 Model.LYparser.prototype = {
- bye:function() {},
+ clean:function() {},
 
  snapshot:function(mode=this.mode) { // return snapshot of current Graph
  switch (mode.value) {
