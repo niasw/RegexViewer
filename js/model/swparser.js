@@ -6,7 +6,8 @@
 /**  dependency: kernel/swparse.js **/
 /**  dependency: kernel/fa.js **/
 /**  dependency: model/swmodel.js **/
-Model.SWparser=function(pattern='') {
+Model.SWparser=function(pattern) {
+ pattern=pattern||''; // for Chrome compatibility (only Firefox supports default parameter feature)
  this.title="SWparser";
  this.pattern=pattern;
  this.mode=Model.GRAPH.ENFA;
@@ -17,7 +18,8 @@ Model.SWparser=function(pattern='') {
 Model.SWparser.prototype = {
  clean:function() {this.ENFAbuilder.clean();}, // release unused space
 
- snapshot:function(mode=this.mode) { // return snapshot of current Graph
+ snapshot:function(mode) { // return snapshot of current Graph
+ mode=mode||this.mode; // for Chrome compatibility (only Firefox supports default parameter feature)
  switch (mode.value) {
  case 0:
   var ret={};
@@ -47,7 +49,8 @@ Model.SWparser.prototype = {
  default:
  }},
 
- highdump:function(mode=this.mode) { // return snapshot with bracket info highlighted
+ highdump:function(mode) { // return snapshot with bracket info highlighted
+ mode=mode||this.mode; // for Chrome compatibility (only Firefox supports default parameter feature)
  switch (mode.value) {
  case 0:
   var ret={};

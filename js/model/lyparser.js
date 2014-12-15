@@ -5,8 +5,8 @@
 /**  dependency: kernel/parse.js **/
 /**  dependency: kernel/fa.js **/
 /**  dependency: model/swmodel.js **/
-Model.LYparser=function(pattern='') {
-console.log('thisbuild');
+Model.LYparser=function(pattern) {
+ pattern=pattern||''; // for Chrome compatibility (only Firefox supports default parameter feature)
  this.title="LYparser";
  this.pattern=pattern;
  this.mode=Model.GRAPH.ENFA;
@@ -22,7 +22,8 @@ console.log('thisbuild');
 Model.LYparser.prototype = {
  clean:function() {},
 
- snapshot:function(mode=this.mode) { // return snapshot of current Graph
+ snapshot:function(mode) { // return snapshot of current Graph
+ mode=mode||this.mode; // for Chrome compatibility (only Firefox supports default parameter feature)
  switch (mode.value) {
  case 0:
   return this.ENFAbuilder.get_snapshot()['fas'];
@@ -33,7 +34,8 @@ Model.LYparser.prototype = {
  default:
  }},
 
- highdump:function(mode=this.mode) { // return snapshot of current Graph
+ highdump:function(mode) { // return snapshot of current Graph
+ mode=mode||this.mode; // for Chrome compatibility (only Firefox supports default parameter feature)
  switch (mode.value) {
  case 0:
   return this.ENFAbuilder.get_snapshot()['fas'];

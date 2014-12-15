@@ -25,13 +25,14 @@ var reg2ptn = function(regex) { // transfer modern regex into minimal regex
  // TODO
 }
 
-var ENFAbuilder = function(pattern="") { // Nondeterminal Finite Automaton with none-char transition
+var ENFAbuilder = function(pattern) { // Nondeterminal Finite Automaton with none-char transition
  /*
   * graph network:
   *   entry = start state,
   *   nodes = states set Q (sub-list of Node.all)
   *   final = accept set F (sub-list of Node.allfin)
   */
+ pattern=pattern||""; // for Chrome compatibility (only Firefox supports default parameter feature)
  this.graph = {
   "entry": undefined,
   "nodes": {},
@@ -75,12 +76,14 @@ ENFAbuilder.prototype = {
   this.graph.nodes[ret.idx]=ret;
   return ret;
  },
- aux_enew:function(node,char=undefined) { // aux method to extrude node
+ aux_enew:function(node,char) { // aux method to extrude node
+  char=char||undefined; // for Chrome compatibility (only Firefox supports default parameter feature)
   var ret=node.enew(char);
   this.graph.nodes[ret.idx]=ret;
   return ret;
  },
- aux_snew:function(node,char=undefined) { // aux method to smooth add node
+ aux_snew:function(node,char) { // aux method to smooth add node
+  char=char||undefined; // for Chrome compatibility (only Firefox supports default parameter feature)
   var ret=node.snew(char);
   this.graph.nodes[ret.idx]=ret;
   return ret;
@@ -121,7 +124,8 @@ ENFAbuilder.prototype = {
   return ret;
  },
 
- steponce:function(char=this.ptn[this.pos]) { // return variation
+ steponce:function(char) { // return variation
+  char=char||this.ptn[this.pos]; // for Chrome compatibility (only Firefox supports default parameter feature)
   var ret=""; // return graph variation
   switch (char) {
   case '(': // {...{...(p) => {...{....p.{("")

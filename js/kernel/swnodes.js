@@ -36,7 +36,8 @@ SWNode.getNewID=function() { // find gap in SWNode.register
 }
 
 SWNode.prototype = {
- init:function(fin=false) {
+ init:function(fin) {
+  fin=fin||false; // for Chrome compatibility (only Firefox supports default parameter feature)
   this.idx=SWNode.getNewID(); // ID (index)
   this.lkt=[]; // this links to ... (children)
   this.lkf=[]; // this links from ... (parents)
@@ -45,8 +46,9 @@ SWNode.prototype = {
   return this;
  },
 
- lk:function(target,chr=undefined) { // link (target SWNode, character) character=undefined for non-operation transition
+ lk:function(target,chr) { // link (target SWNode, character) character=undefined for non-operation transition
  /* It is necessary introduce non-operation transition for the monodirect property we need here. e.g. for 'a*b*', having b should be different from no b state since no more a can be appended. */
+  chr=chr||undefined; // for Chrome compatibility (only Firefox supports default parameter feature)
   this.lkt.push([target,chr]);
   target.lkf.push([this,chr]);
   return this;
@@ -84,13 +86,15 @@ SWNode.prototype = {
   return this.idx;
  },
 
- enew:function(char=undefined) { // extrude node: creating new branch
+ enew:function(char) { // extrude node: creating new branch
+  char=char||undefined; // for Chrome compatibility (only Firefox supports default parameter feature)
   var nnd=new SWNode().init();
   this.lk(nnd,char);
   return nnd;
  },
 
- snew:function(char=undefined) { // smooth add node: without creating new branch
+ snew:function(char) { // smooth add node: without creating new branch
+  char=char||undefined; // for Chrome compatibility (only Firefox supports default parameter feature)
   var nnd=new SWNode().init();
   nnd.lkt=this.lkt;
   this.lkt=[];
@@ -103,7 +107,8 @@ SWNode.prototype = {
   return nnd;
  },
 
- setFinal:function(fin=true) {
+ setFinal:function(fin) {
+  fin=fin||true; // for Chrome compatibility (only Firefox supports default parameter feature)
   this.fin=fin;
   return this;
  }

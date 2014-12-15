@@ -9,7 +9,8 @@
 /**  dependency: model/swgraph.js **/
 /**  dependency: view/swdraw.js **/
 Context.ParsePro={};
-Context.ParsePro.init=function(pattern=Context.pattern) {
+Context.ParsePro.init=function(pattern) {
+ pattern=pattern||Context.pattern; // for Chrome compatibility (only Firefox supports default parameter feature)
  Context.mode="parse";
  if (Context.ParsePro.parser) {Context.ParsePro.parser.clean();}
  Context.ParsePro.parser=new Context.parser(pattern);
