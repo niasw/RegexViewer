@@ -11,9 +11,9 @@ if (!Array.prototype.indexOf) { // for old javascript
   return -1;
  }
 }
-indexOf0 = function(array,e){ // search for 1st element
+indexOf0idx = function(array,e){ // search for 1st element's index coupling
  for(var i=0; i<array.length; i+=1){
-  if(array[i][0]==e){return i;}
+  if(array[i][0]&&array[i][0].idx==e){return i;}
  }
  return -1;
 }
@@ -22,17 +22,17 @@ indexOf0 = function(array,e){ // search for 1st element
 var SWNode = function() {} // pre-declaration of SWNode class
 
 SWNode.clearAll=function() { // remove all SWNodes
- SWNode.all=[]; // set Q (register list)
- SWNode.obj=[]; // data of Q (ID = order)
- SWNode.allfin=[]; // acceptable states F (register list)
+ SWNode.register={}; // (register list: to allocate id)
 }
 SWNode.clearAll(); // initializing static var
+SWNode.unregister=function(id) { // remove 1 SWNodes
+ delete SWNode.register[id];
+}
 
-SWNode.getNewID=function() { // find gap in SWNode.all
- for (var it=0;it<SWNode.all.length;it+=1) {
-  if (SWNode.all.indexOf(it)==-1) {return it;}
+SWNode.getNewID=function() { // find gap in SWNode.register
+ for (var it=0;true;it+=1) {
+  if (!SWNode.register[it]) {return it;}
  }
- return SWNode.all.length;
 }
 
 SWNode.prototype = {
@@ -41,75 +41,70 @@ SWNode.prototype = {
   this.lkt=[]; // this links to ... (children)
   this.lkf=[]; // this links from ... (parents)
   this.fin=fin; // acceptable or not (boolean)
-  SWNode.all.push(this.idx);
-  SWNode.obj[this.idx]=this;
-  if (fin) {SWNode.allfin.push(this.idx);}
+  SWNode.register[this.idx]=true; // use dict as set
   return this;
  },
 
- lk:function(target,chr=undefined) { // link (target ID, character) character=undefined for non-operation transition
+ lk:function(target,chr=undefined) { // link (target SWNode, character) character=undefined for non-operation transition
  /* It is necessary introduce non-operation transition for the monodirect property we need here. e.g. for 'a*b*', having b should be different from no b state since no more a can be appended. */
   this.lkt.push([target,chr]);
-  SWNode.obj[target].lkf.push([this.idx,chr]);
+  target.lkf.push([this,chr]);
   return this;
  },
 
  rm:function() { // remove (warning: chain break will happen)
   var pos; // position temp var
   for (it in this.lkf) {
-   pos=indexOf0(SWNode.obj[this.lkf[it][0]].lkt,this.idx);
-   if (pos>-1) {SWNode.obj[this.lkf[it][0]].lkt.splice(pos,1);} // kick it out from array
+   pos=indexOf0idx(this.lkf[it][0].lkt,this.idx);
+   if (pos>-1) {this.lkf[it][0].lkt.splice(pos,1);} // kick it out from array
   }
   for (it in this.lkt) {
-   pos=indexOf0(SWNode.obj[this.lkt[it][0]].lkf,this.idx);
-   if (pos>-1) {SWNode.obj[this.lkt[it][0]].lkf.splice(pos,1);} // kick it out from array
+   pos=indexOf0idx(this.lkt[it][0].lkf,this.idx);
+   if (pos>-1) {this.lkt[it][0].lkf.splice(pos,1);} // kick it out from array
   }
-  pos=SWNode.all.indexOf(this.idx);
-  if (pos>-1) {SWNode.all.splice(pos,1);}
-  if (SWNode.obj[this.idx].fin) {
-   pos=SWNode.allfin.indexOf(this.idx);
-   if (pos>-1) {SWNode.allfin.splice(pos,1);}
-  }
-  SWNode.obj[this.idx]=undefined;
+  SWNode.unregister(this.idx);
   return this.idx;
  },
 
- smrm:function() { // smooth remove: without breaking chains (warning: self-linking will be lost)
+ smrm:function() { // smooth remove: without breaking chains (warning: self-linking will be lost, and only non-operation transition can cause inherit transition
   var pos; // position temp var
   for (it in this.lkf) {
-   pos=indexOf0(SWNode.obj[this.lkf[it][0]].lkt,this.idx);
-   if (pos>-1) {SWNode.obj[this.lkf[it][0]].lkt.splice(pos,1);} // kick it out from array
+   pos=indexOf0idx(this.lkf[it][0].lkt,this.idx);
+   if (pos>-1) {this.lkf[it][0].lkt.splice(pos,1);} // kick it out from array
   }
   for (it in this.lkt) {
-   pos=indexOf0(SWNode.obj[this.lkt[it][0]].lkf,this.idx);
-   if (pos>-1) {SWNode.obj[this.lkt[it][0]].lkf.splice(pos,1);} // kick it out from array
+   pos=indexOf0idx(this.lkt[it][0].lkf,this.idx);
+   if (pos>-1) {this.lkt[it][0].lkf.splice(pos,1);} // kick it out from array
   }
   for (itf in this.lkf) { for (itt in this.lkt) {
-   if (this.lkf[itf][1]) {SWNode.obj[this.lkf[itf][0]].lk(this.lkt[itt][0],this.lkf[itf][1]);} // non + c = c
-   if (this.lkt[itt][1]) {SWNode.obj[this.lkf[itf][0]].lk(this.lkt[itt][0],this.lkt[itt][1]);} // c1 + c2 = c1 + c2
-   if (!this.lkf[itf][1]&&!this.lkt[itt][1]) {SWNode.obj[this.lkf[itf][0]].lk(this.lkt[itt][0],undefined);} // non + non = non
+   if (!this.lkf[itf][1]) {this.lkf[itf][0].lk(this.lkt[itt][0],this.lkt[itt][1]);} // non + c = c
+   else if (!this.lkt[itt][1]) {this.lkf[itf][0].lk(this.lkt[itt][0],this.lkf[itf][1]);} // c + non = c
   }}
-  pos=SWNode.all.indexOf(this.idx);
-  if (pos>-1) {SWNode.all.splice(pos,1);}
-  if (SWNode.obj[this.idx].fin) {
-   pos=SWNode.allfin.indexOf(this.idx);
-   if (pos>-1) {SWNode.allfin.splice(pos,1);}
-  }
-  SWNode.obj[this.idx]=undefined;
+  SWNode.unregister(this.idx);
   return this.idx;
+ },
+
+ enew:function(char=undefined) { // extrude node: creating new branch
+  var nnd=new SWNode().init();
+  this.lk(nnd,char);
+  return nnd;
+ },
+
+ snew:function(char=undefined) { // smooth add node: without creating new branch
+  var nnd=new SWNode().init();
+  nnd.lkt=this.lkt;
+  this.lkt=[];
+  this.lk(nnd,char);
+  var pos; // position temp var
+  for (it in nnd.lkt) {
+   pos=indexOf0idx(nnd.lkt[it][0].lkf,this.idx);
+   if (pos>-1) {nnd.lkt[it][0].lkf[pos][0]=nnd;} // replace this with nnd
+  }
+  return nnd;
  },
 
  setFinal:function(fin=true) {
-  if (fin!=this.fin) {
-   if (fin) {
-    this.fin=true;
-    SWNode.allfin.push(this.idx);
-   } else {
-    this.fin=false;
-    var pos=SWNode.allfin.indexOf(this.idx);
-    if (pos>-1) {SWNode.allfin.splice(pos,1);}
-   }
-  }
+  this.fin=fin;
   return this;
  }
 }

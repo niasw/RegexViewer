@@ -3,7 +3,7 @@
 
 /** View **/
 /**   dependency: ui/swconst.js **/
-/**   dependency: model/swgraph.js (indexOfidx)**/
+/**   dependency: model/swgraph.js (indexOfid)**/
 /**   dependency: /lib/d3.min.js **/
 var Draw={};
 
@@ -62,24 +62,24 @@ Draw.linkcolor=d3.interpolateLab("#f0f0ff","#7f7faf"); //https://gist.github.com
 // nodes initialize
 Draw.refresh=function() {
  Draw.links=Draw.links.data(Draw.layout.links());
- Draw.links.enter().insert('line','.nodes').attr('class','links').style('opacity',0).transition().duration(500).style('opacity',1);
- Draw.links.exit().transition().duration(500).style('opacity',0).remove();
+ Draw.links.enter().insert('line','.nodes').attr('class','links').style('opacity',0).transition().duration(Const.deltime).style('opacity',1);
+ Draw.links.exit().transition().duration(Const.deltime).style('opacity',0).remove();
  Draw.lktxt=Draw.lktxt.data(Draw.layout.links()).text(function(d) {return d.char;});
- Draw.lktxt.enter().insert('text','.lktxt').attr('class','lktxt').text(function(d) {return d.char;}).style('opacity',0).transition().duration(500).style('opacity',1);
- Draw.lktxt.exit().transition().duration(500).style('opacity',0).remove();
+ Draw.lktxt.enter().insert('text','.lktxt').attr('class','lktxt').text(function(d) {return d.char;}).style('opacity',0).transition().duration(Const.deltime).style('opacity',1);
+ Draw.lktxt.exit().transition().duration(Const.deltime).style('opacity',0).remove();
  Draw.nodes=Draw.nodes.data(Draw.layout.nodes(),function(d) {return d.id;}).style('fill',function(d) {return Draw.linkcolor(0.5-Math.sqrt(d.phase)/8);});
  Draw.nodes.enter().insert('circle','.nodes').attr('class','nodes').style('fill',function(d) {return Draw.linkcolor(0.5-Math.sqrt(d.phase)/8);}).attr('r',0).transition().duration(500).attr('r',Const.circler);
- Draw.nodes.exit().transition().duration(500).attr("r",0).remove();
+ Draw.nodes.exit().transition().duration(Const.deltime).attr("r",0).remove();
  Draw.nodes.call(Draw.layout.drag);
  Draw.ndtxt=Draw.ndtxt.data(Draw.layout.nodes(),function(d) {return d.id;}).text(function(d) {return d.id;});
  Draw.ndtxt.enter().insert('text','.ndtxt').attr('class','ndtxt').text(function(d) {return d.id;}).style('opacity',0).transition().duration(500).style('opacity',1);
- Draw.ndtxt.exit().transition().duration(500).attr("r",0).remove();
+ Draw.ndtxt.exit().transition().duration(Const.deltime).attr("r",0).remove();
  Draw.layout.start();
 }
 Draw.refresh();
 Draw.drawgraph=function(nodesAndLinks) { // FIXME: should acquire variation instead of whole graph.
  for (it in nodesAndLinks.nodes) {
-  var tmp1=indexOfidx(Draw.layout.nodes(),nodesAndLinks.nodes[it].id);
+  var tmp1=indexOfid(Draw.layout.nodes(),nodesAndLinks.nodes[it].id);
   var tmp2=nodesAndLinks.nodes[it];
   if (tmp1==-1) {
    tmp2.x=Draw.mouse[0]+Math.random(20)-10;tmp2.y=Draw.mouse[1]+Math.random(20)-10;
@@ -87,16 +87,12 @@ Draw.drawgraph=function(nodesAndLinks) { // FIXME: should acquire variation inst
    tmp2.x=Draw.layout.nodes()[tmp1].x;tmp2.y=Draw.layout.nodes()[tmp1].y;
   }
  }
- console.log(nodesAndLinks.nodes);
- console.log(Draw.layout.nodes());
  Draw.layout.nodes(nodesAndLinks.nodes);
- console.log(Draw.layout.nodes());
  for (it in nodesAndLinks.links) {
   nodesAndLinks.links[it].source=nodesAndLinks.nodes[nodesAndLinks.links[it].source];
   nodesAndLinks.links[it].target=nodesAndLinks.nodes[nodesAndLinks.links[it].target];
  }
  Draw.layout.links(nodesAndLinks.links);
- console.log(nodesAndLinks.links);
  Draw.refresh();
 }
 Draw.drawstate=function(hightext) { // which char are we dealing with

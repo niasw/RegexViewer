@@ -3,9 +3,9 @@
 
 /** parsing regex without grammar analysis **/
 /**  dependency: ./swnodes.js **/
-indexOf1 = function(array,e){ // search for 2nd element
+indexOf1idx = function(array,e){ // search for 2nd element's index coupling
  for(var i=0; i<array.length; i+=1){
-  if(array[i][1]==e){return i;}
+  if(array[i][1]&&array[i][1].idx==e){return i;}
  }
  return -1;
 }
@@ -34,11 +34,11 @@ var ENFAbuilder = function(pattern="") { // Nondeterminal Finite Automaton with 
   */
  this.graph = {
   "entry": undefined,
-  "nodes": [],
+  "nodes": {},
   "final": []
  };
- this.graph.entry = new SWNode().init().idx;
- this.graph.nodes=[this.graph.entry];
+ this.graph.entry = new SWNode().init();
+ this.graph.nodes[this.graph.entry.idx]=this.graph.entry;
  /*
   * ptn: pattern string
   * pos: position of char in pattern we are dealing with
@@ -51,42 +51,47 @@ var ENFAbuilder = function(pattern="") { // Nondeterminal Finite Automaton with 
   *   bktUsing: save ['(',')'], current level bracket, used for '+'
   */
  this.bktStack = [[this.graph.entry,undefined]]; // { ( "" )
- var tmpnode=new SWNode().init().idx;
- this.graph.nodes.push(tmpnode);
- SWNode.obj[this.graph.entry].lk(tmpnode);
- this.bktUsing = [this.graph.entry,tmpnode];
+ this.bktUsing = [this.graph.entry,this.graph.entry];
 }
 
 ENFAbuilder.prototype = {
- bye:function() { // release all allocated space, assume this network is independent with others
+ clean:function() {
   for (it in this.graph.nodes) {
-   var pos=SWNode.all.indexOf(this.graph.nodes[it]);
-   if (pos>-1) {SWNode.all.splice(pos,1);}
-   if (SWNode.obj[this.graph.nodes[it]].fin) {
-    pos=SWNode.allfin.indexOf(this.idx);
-    if (pos>-1) {SWNode.allfin.splice(pos,1);}
-   }
-   SWNode.obj[this.graph.nodes[it]]=undefined;
+   SWNode.unregister(this.graph.nodes[it].idx);
   }
+  this.bktStack=[];this.bktUsing=[undefined,undefined];
+  this.graph.entry=undefined;
+  delete this.graph;
  },
 
- aux_del:function(nodeID) { // aux method to remove node from register list
-  SWNode.obj[nodeID].smrm();
-  var pos=this.graph.nodes.indexOf(nodeID);
-  if (pos>-1) {this.graph.nodes.splice(pos,1);}
+ aux_sdel:function(node) { // aux method to smooth remove node
+  node.smrm();delete this.graph.nodes[node.idx];
+ },
+ aux_del:function(node) { // aux method to remove node and break chain
+  node.rm();delete this.graph.nodes[node.idx];
  },
  aux_new:function() { // aux method to add node into register list
-  var ret=new SWNode().init().idx;
-  this.graph.nodes.push(ret);
+  var ret=new SWNode().init();
+  this.graph.nodes[ret.idx]=ret;
   return ret;
  },
- aux_fin:function(nodeID,isfinal) { // aux method to add node into register list
-  if (SWNode.obj[nodeID].fin!=isfinal) {
-   SWNode.obj[nodeID].setFinal(isfinal);
+ aux_enew:function(node,char=undefined) { // aux method to extrude node
+  var ret=node.enew(char);
+  this.graph.nodes[ret.idx]=ret;
+  return ret;
+ },
+ aux_snew:function(node,char=undefined) { // aux method to smooth add node
+  var ret=node.snew(char);
+  this.graph.nodes[ret.idx]=ret;
+  return ret;
+ },
+ aux_fin:function(node,isfinal) { // aux method to add node into final register list
+  if (node.fin!=isfinal) {
+   node.setFinal(isfinal);
    if (isfinal) {
-    this.graph.final.push(nodeID);
+    this.graph.final.push(node.idx);
    } else {
-    var pos=this.graph.final.indexOf(nodeID);
+    var pos=this.graph.final.indexOf(node.idx);
     if (pos>-1) {this.graph.final.splice(pos,1);}
    }
   }
@@ -95,14 +100,15 @@ ENFAbuilder.prototype = {
  high:function() { // return nodes with bracket info highlighted
   var ret=[]; // return
   var pos;
+  var num=-1;
   for (it in this.graph.nodes) {
-   ret.push({"index":this.graph.nodes[it],"marks":[]});
-   pos=indexOf0(this.bktStack,this.graph.nodes[it]);
-   if (pos!=-1) {ret[it].marks.push('{');}
-   pos=indexOf1(this.bktStack,this.graph.nodes[it]);
-   if (pos!=-1) {ret[it].marks.push('}');}
-   if (this.graph.nodes[it]==this.bktUsing[0]) {ret[it].marks.push('(');}
-   if (this.graph.nodes[it]==this.bktUsing[1]) {ret[it].marks.push(')');}
+   ret.push({"index":this.graph.nodes[it].idx,"marks":[]});num+=1;
+   pos=indexOf0idx(this.bktStack,this.graph.nodes[it].idx);
+   if (pos!=-1) {ret[num].marks.push('{');}
+   pos=indexOf1idx(this.bktStack,this.graph.nodes[it].idx);
+   if (pos!=-1) {ret[num].marks.push('}');}
+   if (this.bktUsing[0]&&this.graph.nodes[it].idx==this.bktUsing[0].idx) {ret[num].marks.push('(');}
+   if (this.bktUsing[1]&&this.graph.nodes[it].idx==this.bktUsing[1].idx) {ret[num].marks.push(')');}
   }
   return ret;
  },
@@ -112,81 +118,69 @@ ENFAbuilder.prototype = {
   ret.entry=this.graph.entry;
   ret.nodes=this.graph.nodes;
   ret.final=this.graph.final;
-  ret.store=SWNode.obj;
   return ret;
  },
 
  steponce:function(char=this.ptn[this.pos]) { // return variation
-//var ret=""; // return graph variation
+  var ret=""; // return graph variation
   switch (char) {
   case '(': // {...{...(p) => {...{....p.{("")
-   if (SWNode.obj[this.bktUsing[0]].lkt[0][0]!=this.bktUsing[1]) {
-//  ret=ret+"D"+SWNode.obj[bktUsing[0]].lkt[0][0]; // delete aux node
-    this.aux_del(SWNode.obj[this.bktUsing[0]].lkt[0][0]);
-   }
-   this.bktStack.push([this.bktUsing[0],undefined]);
-   this.bktUsing[0]=this.bktUsing[1];
-// ret=ret+"E"+this.bktUsing[0];  // extrude with non-char transition
-   this.bktUsing[1]=this.aux_new();
-   SWNode.obj[this.bktUsing[0]].lk(this.bktUsing[1]);
+   this.bktStack.push([this.bktUsing[1],undefined]);
    break;
   case ')': // {...{...(p) => {...(....p.)
    var tmpBkt=this.bktStack.pop();
    this.bktUsing[0]=tmpBkt[0];
    if (tmpBkt[1]) {
-//  ret=ret+"L"+this.bktUsing[1]+","+tmpBkt[1]; // link with non-char transition
-    SWNode.obj[this.bktUsing[1]].lk(tmpBkt[1]);
+    ret=ret+"L()"+this.bktUsing[1].idx+","+tmpBkt[1].idx; // link with non-char transition
+    this.bktUsing[1].lk(tmpBkt[1]);
     this.bktUsing[1]=tmpBkt[1];
    }
    break;
-  case '|': // {...{...(p) => {...{....p.|("")
-   var tmpBkt=this.bktStack.pop();
+  case '|': // {...{...(p) => {...{("")|....p.}
+   var tmpBkt=this.bktStack.pop(); // the '}'
    if (!tmpBkt[1]) {
-//  ret=ret+"E"+this.bktUsing[1]; // extrude with non-char transition
-    tmpBkt[1]=this.aux_new();
+    ret=ret+"e()"+this.bktUsing[1].idx; // extrude with non-char transition
+    tmpBkt[1]=this.aux_enew(this.bktUsing[1]);
    }
-   else {ret=ret+"L"+this.bktUsing[1]+","+tmpBkt[1];} // link with non-char transition
-   SWNode.obj[this.bktUsing[1]].lk(tmpBkt[1]);
-   this.bktUsing[1]=SWNode.obj[tmpBkt[0]].lkt[0][0];
+   else {
+    ret=ret+"L"+this.bktUsing[1].idx+","+tmpBkt[1].idx; // link with non-char transition
+    this.bktUsing[1].lk(tmpBkt[1]);
+   }
+   this.bktUsing[0]=tmpBkt[0];
+   this.bktUsing[1]=tmpBkt[0];
    this.bktStack.push(tmpBkt);
    break;
   case '+': // {...{...(p) => {...{...(p+)
-// ret=ret+"L"+this.bktUsing[1]+","+SWNode.obj[this.bktUsing[0]].lkt[0][0]; // link with non-char transition
-   SWNode.obj[this.bktUsing[1]].lk(SWNode.obj[this.bktUsing[0]].lkt[0][0]); // link back
+   ret=ret+"E()"+this.bktUsing[0].idx; // smooth add node with non-char transition
+   var tmpNod=this.aux_snew(this.bktUsing[0]);
+   ret=ret+"L"+this.bktUsing[1].idx+","+tmpNod.idx; // link with non-char transition
+   this.bktUsing[1].lk(tmpNod);
    break;
   case '\\': // special char
    // TODO
   default: // {...{...(p) => {...{....p.(c)
-   var tmpnode;
-   if (SWNode.obj[this.bktUsing[0]].lkt[0][0]!=this.bktUsing[1]) {
-//  ret=ret+"D"+SWNode.obj[this.bktUsing[0]].lkt[0][0]; // delete aux node
-    this.aux_del(SWNode.obj[this.bktUsing[0]].lkt[0][0]);
-    this.bktUsing[0]=this.bktUsing[1];
-//  ret=ret+"E"+this.bktUsing[0]; // extrude with non-char transition
-    tmpnode=this.aux_new();
-    SWNode.obj[this.bktUsing[0]].lk(tmpnode);
-   } else {tmpnode=this.bktUsing[1];}
-// ret=ret+"E("+char+")"+this.bktUsing[0]; // extrude with char transition
-   this.bktUsing[1]=this.aux_new();
-   SWNode.obj[tmpnode].lk(this.bktUsing[1],char);
+   this.bktUsing[0]=this.bktUsing[1];
+   ret=ret+"e("+char+")"+this.bktUsing[1].idx; // smooth add node with non-char transition
+   this.bktUsing[1]=this.aux_enew(this.bktUsing[1],char);
   }
   this.pos+=1;
-//return ret;
+  return ret;
  },
 
  step:function() { // try to step
-//var ret="";
+  var ret="";
   if (this.pos<this.ptn.length) {
-   this.steponce(); // ret=ret+this.steponce();
-// return ret;
+   ret=ret+this.steponce();
+   return ret;
   } else if (this.pos==this.ptn.length) {
-// ret=ret+"D"+SWNode.obj[bktUsing[0]].lkt[0][0]; // delete aux node
-   this.aux_del(SWNode.obj[this.bktUsing[0]].lkt[0][0]);
-   this.aux_fin(this.bktUsing[1],true);
+   this.aux_fin(this.bktUsing[1],true); // set final
    this.pos+=1;
+   while (this.bktStack.length>0) { // clear all uncoupled brackets
+    this.steponce(')');
+   }
    this.bktStack=[];
    this.bktUsing=[];
-// return ret+"F"; // final
+   return ret+"F"; // end with 'F'
   }
  },
 
@@ -194,6 +188,6 @@ ENFAbuilder.prototype = {
   while (this.pos<=this.ptn.length) {
    this.step();
   }
-//return this.dump();
+  return this.dump();
  }
 }

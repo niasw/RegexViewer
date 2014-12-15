@@ -15,31 +15,29 @@ Model.SWparser=function(pattern='') {
  this.DFAbuilder=undefined; // in beginning, not available yet
 };
 Model.SWparser.prototype = {
- bye:function() { // release all allocated space, assume this network is independent with others
-  this.ENFAbuilder.bye();
- },
+ clean:function() {this.ENFAbuilder.clean();}, // release unused space
 
  snapshot:function(mode=this.mode) { // return snapshot of current Graph
  switch (mode.value) {
  case 0:
   var ret={};
-  ret["initial"]=this.ENFAbuilder.graph.entry;
+  ret["initial"]=this.ENFAbuilder.graph.entry.idx;
   ret["accept"]=this.ENFAbuilder.graph.final;
   ret["states"]={};
   var nodes=this.ENFAbuilder.graph.nodes;
   var tmp,lkl; // node, link list
   for (it in nodes) {
-   tmp={"transit":{}};lkl=SWNode.obj[nodes[it]].lkt;
+   tmp={"transit":{}};lkl=nodes[it].lkt;
    for (it2 in lkl) {
     if (lkl[it2][1]) {
      if (!tmp["transit"][lkl[it2][1]]) {tmp["transit"][lkl[it2][1]]={};}
-     tmp["transit"][lkl[it2][1]][lkl[it2][0]]=0; // set structure: replace 'true' with '0'
+     tmp["transit"][lkl[it2][1]][lkl[it2][0].idx]=0; // set structure: replace 'true' with '0'
     } else { // undefined => ""
      if (!tmp["transit"][""]) {tmp["transit"][""]={};}
-     tmp["transit"][""][lkl[it2][0]]=0; // set structure: replace 'true' with '0'
+     tmp["transit"][""][lkl[it2][0].idx]=0; // set structure: replace 'true' with '0'
     }
    }
-   ret["states"][nodes[it]]=tmp;
+   ret["states"][nodes[it].idx]=tmp;
   }
   return [ret];
  case 1:
@@ -54,15 +52,17 @@ Model.SWparser.prototype = {
  case 0:
   var ret={};
   var hgh=this.ENFAbuilder.high(); // highlight
-  ret["initial"]=this.ENFAbuilder.graph.entry;
+  ret["initial"]=this.ENFAbuilder.graph.entry.idx;
   ret["accept"]=this.ENFAbuilder.graph.final;
   ret["states"]={};
   var nodes=this.ENFAbuilder.graph.nodes;
   var tmp,lkl; // node, link list
+  var num=-1;
   for (it in nodes) {
-   tmp={"transit":{},"phase":0};lkl=SWNode.obj[nodes[it]].lkt;
-   for (it1 in hgh[it]["marks"]) {
-    switch (hgh[it]["marks"][it1]) {
+   num+=1;
+   tmp={"transit":{},"phase":0};lkl=nodes[it].lkt;
+   for (it1 in hgh[num]["marks"]) {
+    switch (hgh[num]["marks"][it1]) {
     case '(': tmp["phase"]+=1;break;
     case ')': tmp["phase"]+=2;break;
     case '}': tmp["phase"]+=4;break;
@@ -73,13 +73,13 @@ Model.SWparser.prototype = {
    for (it2 in lkl) {
     if (lkl[it2][1]) {
      if (!tmp["transit"][lkl[it2][1]]) {tmp["transit"][lkl[it2][1]]={};}
-     tmp["transit"][lkl[it2][1]][lkl[it2][0]]=0; // in my builder, edges should be highlighted with animation rather than colors
+     tmp["transit"][lkl[it2][1]][lkl[it2][0].idx]=0; // in my builder, edges should be highlighted with animation rather than colors
     } else { // undefined => ""
      if (!tmp["transit"][""]) {tmp["transit"][""]={};}
-     tmp["transit"][""][lkl[it2][0]]=0;
+     tmp["transit"][""][lkl[it2][0].idx]=0;
     }
    }
-   ret["states"][nodes[it]]=tmp;
+   ret["states"][nodes[it].idx]=tmp;
   }
   return [ret];
  case 1:
@@ -122,15 +122,14 @@ Model.SWparser.prototype = {
 
  step:function() { // no null-ptr protection here. "try {step()} catch() {ready()}" please.
   switch (this.mode.value) {
-  case 0: this.ENFAbuilder.step();break;
-  case 1: this.NFAbuilder.iter();break;
-  case 2: this.DFAbuilder.iter();break;
+  case 0: return this.ENFAbuilder.step();break;
+  case 1: return this.NFAbuilder.iter();break;
+  case 2: return this.DFAbuilder.iter();break;
   default:
   }
  },
 
  refresh:function() { // update all
-  this.bye();
   this.ENFAbuilder=new ENFAbuilder(this.pattern);
   this.NFAbuilder=undefined;
   this.DFAbuilder=undefined;

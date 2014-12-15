@@ -4,9 +4,9 @@
 /** Transfer snapshot into nodes and links for drawing **/
 /**  dependency: model/swmodel.js **/
 /**  related js: kernel/fa.js **/
-indexOfidx = function(array,e){ // search for index coupling
+indexOfid = function(array,e){ // search for index coupling
  for(var i=0; i<array.length; i+=1){
-  if(array[i].id==e){return i;}
+  if(array[i]&&array[i].id==e){return i;}
  }
  return -1;
 }
@@ -25,14 +25,14 @@ Model.nodes_links=function(snapshot) {
   for (it1 in snapshot[it0].states) {
    for (it2 in snapshot[it0].states[it1].transit) {
     for (it3 in snapshot[it0].states[it1].transit[it2]) {
-     links.push({"source":indexOfidx(nodes,it1),"target":indexOfidx(nodes,it3),"char":it2,"phase":snapshot[it0].states[it1].transit[it2][it3]}); // warning: src and tgt are idx of nodes. not the "index" in the dict
+     links.push({"source":indexOfid(nodes,it1),"target":indexOfid(nodes,it3),"char":it2,"phase":snapshot[it0].states[it1].transit[it2][it3]}); // warning: src and tgt are idx of nodes. not the "index" in the dict
     }
    }
   }
-  pos=indexOfidx(nodes,snapshot[it0].initial);
+  pos=indexOfid(nodes,snapshot[it0].initial);
   if (pos!=-1) {nodes[pos].entry=true;}
   for (it1 in snapshot[it0].accept) {
-   pos=indexOfidx(nodes,snapshot[it0].accept[it1]);
+   pos=indexOfid(nodes,snapshot[it0].accept[it1]);
    if (pos!=-1) {nodes[pos].final=true;}
   }
  }

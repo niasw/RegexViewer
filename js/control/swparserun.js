@@ -11,7 +11,7 @@
 Context.ParsePro={};
 Context.ParsePro.init=function(pattern=Context.pattern) {
  Context.mode="parse";
- if (Context.ParsePro.parser) {Context.ParsePro.parser.bye();}
+ if (Context.ParsePro.parser) {Context.ParsePro.parser.clean();}
  Context.ParsePro.parser=new Context.parser(pattern);
  Context.ParsePro.parser.ready();
  Draw.drawgraph(Model.nodes_links(Context.ParsePro.parser.highdump()));

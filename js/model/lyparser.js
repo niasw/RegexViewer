@@ -9,7 +9,7 @@ Model.LYparser=function(pattern='') {
  this.title="LYparser";
  this.pattern=pattern;
  this.mode=Model.GRAPH.ENFA;
- this.ENFAbuilder=new nfae_maker(pattern);
+ this.ENFAbuilder=new nfae_maker(parser.parse(pattern));
  this.ENFAbuilder.run=function() {
   while (!this.ENFAbuilder.is_end()) {
    this.ENFAbuilder.iter();
