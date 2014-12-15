@@ -68,4 +68,4 @@ where destinations is
 ```
 { state1: phase1, state2: phase2, ... }
 ```
-
+ 
