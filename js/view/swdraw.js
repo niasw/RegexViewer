@@ -105,3 +105,14 @@ Draw.drawstate=function(hightext) { // which char are we dealing with
   tp.node().textContent=hightext[it].txt;
  }
 }
+Draw.drawdiffm=function(difmsg) { // show difference of graph, report errors besides
+ var txt=d3.select('div#difMessage');
+ txt.selectAll('p').remove();
+ if (difmsg) {
+  var tp=txt.append('p');
+  tp.attr('class','pre');
+  tp.attr('style','display:inline;');
+  tp.node().text=difmsg;
+  tp.node().textContent=difmsg;
+ }
+}

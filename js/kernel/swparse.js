@@ -57,9 +57,9 @@ var ENFAbuilder = function(pattern) { // Nondeterminal Finite Automaton with non
 
 ENFAbuilder.prototype = {
  clean:function() {
-  for (it in this.graph.nodes) {
+  if (this.graph) {for (it in this.graph.nodes) {
    SWNode.unregister(this.graph.nodes[it].idx);
-  }
+  }}
   this.bktStack=[];this.bktUsing=[undefined,undefined];
   this.graph.entry=undefined;
   delete this.graph;
@@ -133,6 +133,7 @@ ENFAbuilder.prototype = {
    break;
   case ')': // {...{...(p) => {...(....p.)
    var tmpBkt=this.bktStack.pop();
+   if (!tmpBkt) {ret="Pattern Error: uncoupled ')'.";return ret;}
    this.bktUsing[0]=tmpBkt[0];
    if (tmpBkt[1]) {
     ret=ret+"L()"+this.bktUsing[1].idx+","+tmpBkt[1].idx; // link with non-char transition

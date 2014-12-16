@@ -18,7 +18,7 @@ Context.ParsePro.init=function(pattern) {
  Draw.drawgraph(Model.nodes_links(Context.ParsePro.parser.highdump()));
 }
 Context.ParsePro.step=function() {
- Context.ParsePro.parser.step();
+ Draw.drawdiffm(Context.ParsePro.parser.step());
  Draw.drawgraph(Model.nodes_links(Context.ParsePro.parser.highdump()));
  Draw.drawstate(Context.ParsePro.parser.hightext());
 }
