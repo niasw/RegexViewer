@@ -10,8 +10,8 @@ The principles are based on the relation between non-deterministic finite automa
 
 ##Application Package
 
-RegexViewer <https://github.com/niasw/RegexViewer>
-re-view <https://github.com/CasperVector/re-view>
+* RegexViewer <https://github.com/niasw/RegexViewer>
+* re-view <https://github.com/CasperVector/re-view>
 
 Copyright 2014 Sun Sibai <niasw(AT)pku.edu.cn> & Liu Yu & Tian Chuang & Zhuo Junbao & Zhai Aonan <br/>
 
@@ -24,5 +24,5 @@ Copyright 2014 Sun Sibai <niasw(AT)pku.edu.cn> & Liu Yu & Tian Chuang & Zhuo Jun
 
 ##References
 
-NFA Theory Inspired by <http://swtch.com/~rsc/regexp/regexp1.html>
-
+* NFA Theory Inspired by <http://swtch.com/~rsc/regexp/regexp1.html>
+* 3rd Party Libs Used: [d3](http://d3js.org), hashset, [jshashtable](https://code.google.com/p/jshashtable/), [jison](http://jison.org/)
