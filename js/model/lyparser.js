@@ -12,8 +12,8 @@ Model.LYparser=function(pattern) {
  this.mode=Model.GRAPH.ENFA;
  this.ENFAbuilder=new nfae_maker(parser.parse(pattern));
  this.ENFAbuilder.run=function() {
-  while (!this.ENFAbuilder.is_end()) {
-   this.ENFAbuilder.iter();
+  while (!this.is_end()) {
+   this.iter();
   }
  }
  this.NFAbuilder=undefined; // in beginning, not available yet
@@ -28,9 +28,17 @@ Model.LYparser.prototype = {
  case 0:
   return this.ENFAbuilder.get_snapshot()['fas'];
  case 1:
-  return this.NFAbuilder.get_snapshot();
+  if (!this.NFAbuilder) {this.ready();}
+  var tmp=this.NFAbuilder.get_snapshot();
+  if (this.NFAbuilder.is_end()) {return [tmp.nfa];}
+//  else {return [tmp.nfa,tmp.nfae];}
+  else {return [tmp.nfa];} // FIXME: ID conflict!
  case 2:
-  return this.DFAbuilder.get_snapshot();
+  if (!this.DFAbuilder) {this.ready();}
+  var tmp=this.DFAbuilder.get_snapshot();
+  if (this.DFAbuilder.is_end()) {return [tmp.dfa];}
+//  else {return [tmp.dfa,tmp.nfa];}
+  else {return [tmp.dfa];} // FIXME: ID conflict!
  default:
  }},
 
@@ -40,9 +48,17 @@ Model.LYparser.prototype = {
  case 0:
   return this.ENFAbuilder.get_snapshot()['fas'];
  case 1:
-  return this.NFAbuilder.get_snapshot();
+  if (!this.NFAbuilder) {this.ready();}
+  var tmp=this.NFAbuilder.get_snapshot();
+  if (this.NFAbuilder.is_end()) {return [tmp.nfa];}
+//  else {return [tmp.nfa,tmp.nfae];}
+  else {return [tmp.nfa];} // FIXME: ID conflict!
  case 2:
-  return this.DFAbuilder.get_snapshot();
+  if (!this.DFAbuilder) {this.ready();}
+  var tmp=this.DFAbuilder.get_snapshot();
+  if (this.DFAbuilder.is_end()) {return [tmp.dfa];}
+//  else {return [tmp.dfa,tmp.nfa];}
+  else {return [tmp.dfa];} // FIXME: ID conflict!
  default:
  }},
 
@@ -53,19 +69,19 @@ Model.LYparser.prototype = {
  ready:function() { // run until ready for the mode
   if (this.mode.value>=1) { // dependency
    this.ENFAbuilder.run();
-   this.NFAbuilder=new nfa_maker(this.snapshot(Model.GRAPH.ENFA)); // share the same algorithm, no need for a copy
+   this.NFAbuilder=new nfa_maker(this.snapshot(Model.GRAPH.ENFA)[0]);
    this.NFAbuilder.run=function() {
-    while (!this.NFAbuilder.is_end()) {
-     this.NFAbuilder.iter();
+    while (!this.is_end()) {
+     this.iter();
     }
    }
   }
   if (this.mode.value>=2) { // dependency
    this.NFAbuilder.run();
-   this.DFAbuilder=new dfa_maker(this.snapshot(Model.GRAPH.NFA)); // share the same algorithm, no need for a copy
+   this.DFAbuilder=new dfa_maker(this.snapshot(Model.GRAPH.NFA)[0]);
    this.DFAbuilder.run=function() {
-    while (!this.DFAbuilder.is_end()) {
-     this.DFAbuilder.iter();
+    while (!this.is_end()) {
+     this.iter();
     }
    }
   }
@@ -81,7 +97,7 @@ Model.LYparser.prototype = {
  },
 
  refresh:function() { // update all
-  this.bye();
+  this.clean();
   this.ENFAbuilder=new ENFAbuilder(this.pattern);
   this.NFAbuilder=undefined;
   this.DFAbuilder=undefined;

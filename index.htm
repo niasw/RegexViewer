@@ -22,16 +22,16 @@ Press <b>Enter</b> or <b>-&gt;</b> to Step Forward.
   <input type="checkbox" class="checkbox" id="limStt" value="Strict Start" name="limStt">Strict Start</input><br/>
   <input type="checkbox" class="checkbox" id="limFnl" value="Strict Final" name="limFnl">Strict Final</input><br/>
   <br/>Parsing Method<br/>
-  <input type="radio" class="radio" name="parse" value="SWparser" checked="checked">Direct Parse</input><br/>
-  <input type="radio" class="radio" name="parse" value="LYparser">Grammar Tree</input><br/>
+  <input type="radio" class="radio" name="parse" value="SWparser" checked="checked" onkeydown="javascript:this.blur();">Direct Parse</input><br/>
+  <input type="radio" class="radio" name="parse" value="LYparser" onkeydown="javascript:this.blur();">Grammar Tree</input><br/>
   <br/>Graph Type<br/>
-  <input type="radio" class="radio" name="graph" value="ENFA" checked="checked">ϵ-NFA Graph</input><br/>
-  <input type="radio" class="radio" name="graph" value="NFA"> NFA Graph </input><br/>
-  <input type="radio" class="radio" name="graph" value="DFA"> DFA Graph </input><br/>
+  <input type="radio" class="radio" name="graph" value="ENFA" checked="checked" onkeydown="javascript:this.blur();">ϵ-NFA Graph</input><br/>
+  <input type="radio" class="radio" name="graph" value="NFA" onkeydown="javascript:this.blur();"> NFA Graph </input><br/>
+  <input type="radio" class="radio" name="graph" value="DFA" onkeydown="javascript:this.blur();"> DFA Graph </input><br/>
   <br/>Navigation<br/>
-  <input type="radio" class="radio" name="navi" value="man" checked="checked"> Manual </input><br/>
-  <input type="radio" class="radio" name="navi" value="aut">Auto Trace</input><br/>
-  <input type="radio" class="radio" name="navi" value="run"> Run Fast </input><br/>
+  <input type="radio" class="radio" name="navi" value="man" checked="checked" onkeydown="javascript:this.blur();"> Manual </input><br/>
+  <input type="radio" class="radio" name="navi" value="aut" onkeydown="javascript:this.blur();">Auto Trace</input><br/>
+  <input type="radio" class="radio" name="navi" value="run" onkeydown="javascript:this.blur();"> Run Fast </input><br/>
   <br/>
  </form></div>
  <div class="right wrapper"><span class="center" style="text-align:center;">
@@ -61,6 +61,7 @@ Press <b>Enter</b> or <b>-&gt;</b> to Step Forward.
  <script src="js/view/swdraw.js"></script>
  <script src="js/control/swparserun.js"></script>
  <!--<script src="js/control/swmatchrun.js"></script>-->
+ <script src="js/control/swrefresh.js"></script>
  <script src="js/ui/swkeys.js"></script>
  <script src="js/ui/swui.js"></script>
 <div class="center wrapper"><p class="center" style="width:1024px;text-align:center;line-height:15pt;padding:5;">

@@ -20,6 +20,8 @@
  }
 
  document.write("\n");
+ console.log('nfae');
+ dbg2(nfae);
  var maker2 = new nfa_maker(nfae), nfa;
  while (true) {
   var result = maker2.iter();

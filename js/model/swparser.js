@@ -43,9 +43,17 @@ Model.SWparser.prototype = {
   }
   return [ret];
  case 1:
-  return this.NFAbuilder.get_snapshot();
+  if (!this.NFAbuilder) {this.ready();}
+  var tmp=this.NFAbuilder.get_snapshot();
+  if (this.NFAbuilder.is_end()) {return [tmp.nfa];}
+//  else {return [tmp.nfa,tmp.nfae];}
+  else {return [tmp.nfa];} // FIXME: ID conflict!
  case 2:
-  return this.DFAbuilder.get_snapshot();
+  if (!this.DFAbuilder) {this.ready();}
+  var tmp=this.DFAbuilder.get_snapshot();
+  if (this.DFAbuilder.is_end()) {return [tmp.dfa];}
+//  else {return [tmp.dfa,tmp.nfa];}
+  else {return [tmp.dfa];} // FIXME: ID conflict!
  default:
  }},
 
@@ -86,9 +94,17 @@ Model.SWparser.prototype = {
   }
   return [ret];
  case 1:
-  return this.NFAbuilder.get_snapshot();
+  if (!this.NFAbuilder) {this.ready();}
+  var tmp=this.NFAbuilder.get_snapshot();
+  if (this.NFAbuilder.is_end()) {return [tmp.nfa];}
+//  else {return [tmp.nfa,tmp.nfae];}
+  else {return [tmp.nfa];} // FIXME: ID conflict!
  case 2:
-  return this.DFAbuilder.get_snapshot();
+  if (!this.DFAbuilder) {this.ready();}
+  var tmp=this.DFAbuilder.get_snapshot();
+  if (this.DFAbuilder.is_end()) {return [tmp.dfa];}
+//  else {return [tmp.dfa,tmp.nfa];}
+  else {return [tmp.dfa];} // FIXME: ID conflict!
  default:
  }},
 
@@ -105,19 +121,19 @@ Model.SWparser.prototype = {
  ready:function() { // run until ready for the mode
   if (this.mode.value>=1) { // dependency
    this.ENFAbuilder.run();
-   this.NFAbuilder=new nfa_maker(this.snapshot(Model.GRAPH.ENFA)); // share the same algorithm, no need for a copy
+   this.NFAbuilder=new nfa_maker(this.snapshot(Model.GRAPH.ENFA)[0]); // share the same algorithm, no need for a copy
    this.NFAbuilder.run=function() {
-    while (!this.NFAbuilder.is_end()) {
-     this.NFAbuilder.iter();
+    while (!this.is_end()) {
+     this.iter();
     }
    }
   }
   if (this.mode.value>=2) { // dependency
    this.NFAbuilder.run();
-   this.DFAbuilder=new dfa_maker(this.snapshot(Model.GRAPH.NFA)); // share the same algorithm, no need for a copy
+   this.DFAbuilder=new dfa_maker(this.snapshot(Model.GRAPH.NFA)[0]);
    this.DFAbuilder.run=function() {
-    while (!this.DFAbuilder.is_end()) {
-     this.DFAbuilder.iter();
+    while (!this.is_end()) {
+     this.iter();
     }
    }
   }
@@ -126,8 +142,8 @@ Model.SWparser.prototype = {
  step:function() { // no null-ptr protection here. "try {step()} catch() {ready()}" please.
   switch (this.mode.value) {
   case 0: return this.ENFAbuilder.step();break;
-  case 1: return this.NFAbuilder.iter();break;
-  case 2: return this.DFAbuilder.iter();break;
+  case 1: this.NFAbuilder.iter();break;
+  case 2: this.DFAbuilder.iter();break;
   default:
   }
  },
