@@ -7,6 +7,8 @@
 /**   dependency: /lib/d3.min.js **/
 var Draw={};
 
+Draw.line = d3.svg.line()
+    .interpolate("basis");
 // force layout
 Draw.canvas=d3.select('div#canvas').append('div').attr('id','svg').append('svg').attr('class','chart center')
  .attr('width',Const.wid).attr('height',Const.hgh);
@@ -16,10 +18,12 @@ Draw.ndtxt=Draw.canvas.selectAll(".ndtxt"); // share data with nodes
 Draw.lktxt=Draw.canvas.selectAll(".lktxt"); // share data with links
 Draw.tick=function() {
  Draw.links
-  .attr("x1", function(d) {return d.source.x;})
-  .attr("y1", function(d) {return d.source.y;})
-  .attr("x2", function(d) {return d.target.x;})
-  .attr("y2", function(d) {return d.target.y;});
+ // .attr("x1", function(d) {return d.source.x;})
+ // .attr("y1", function(d) {return d.source.y;})
+ // .attr("x2", function(d) {return d.target.x;})
+  //.attr("y2", function(d) {return d.target.y;});
+ //   .attr("d",function(d){var t=quad(sample(Draw.line(points(d)), 8));return lineJoin(t[0], t[1], t[2], t[3], 32);});
+    .attr("d",function(d){var t=points(d);return "M"+ t[0]+" Q"+ t[1]+" "+ t[2];});
  Draw.nodes
   .attr("cx", function(d) {return d.x;})
   .attr("cy", function(d) {return d.y;});
@@ -57,18 +61,41 @@ Draw.canvas.on("mousedown",Draw.mousedown);
 Draw.canvas.on("mouseup",Draw.mousemove);
 
 // link color
-Draw.linkcolor=d3.interpolateLab("#f0f0ff","#7f7faf"); //https://gist.github.com/mbostock/4163057 , http://blog.csdn.net/lzhlzz/article/details/41808231
+Draw.linkcolor=d3.interpolateLab("#f0f0ff","#7f7faf"); // Gradient Ref: https://gist.github.com/mbostock/4163057 , Arrow Ref: http://blog.csdn.net/lzhlzz/article/details/41808231
+
+// node color
+Draw.nodecolor=function(phase) {
+ if (phase<0) {return (d3.interpolateLab("#ffffff","#7f7faf"))(phase);}
+ else if (phase<1) {return (d3.interpolateLab("#7f7faf","#af7f7f"))(phase);}
+ else if (phase<2) {return (d3.interpolateLab("#af7f7f","#7faf7f"))(phase-1);}
+ else {return (d3.interpolateLab("#7faf7f","#af7f7f"))(phase-2);}
+}
+
+Draw.defs = Draw.canvas.append("defs").selectAll("marker")
+    .data(["licensing"])
+    .enter().append("svg:marker")
+    .attr("id", "licensing")
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 35)
+    .attr("refY", 5)
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
+    .attr("orient", "auto")
+    .append("svg:path")
+    .attr("style","stroke-width:1pt")
+    .attr("d", "M0,-5L10,0L0,5");
 
 // nodes initialize
 Draw.refresh=function() {
  Draw.links=Draw.links.data(Draw.layout.links());
- Draw.links.enter().insert('line','.nodes').attr('class','links').style('opacity',0).transition().duration(Const.deltime).style('opacity',1);
+ Draw.links.enter().insert('path','.nodes').attr('class','links').style('opacity',0).transition().duration(Const.deltime).style('opacity',1)
+     .attr("marker-end","url(#licensing)");
  Draw.links.exit().transition().duration(Const.deltime).style('opacity',0).remove();
  Draw.lktxt=Draw.lktxt.data(Draw.layout.links()).text(function(d) {return d.char;});
  Draw.lktxt.enter().insert('text','.lktxt').attr('class','lktxt').text(function(d) {return d.char;}).style('opacity',0).transition().duration(Const.deltime).style('opacity',1);
  Draw.lktxt.exit().transition().duration(Const.deltime).style('opacity',0).remove();
- Draw.nodes=Draw.nodes.data(Draw.layout.nodes(),function(d) {return d.id;}).style('fill',function(d) {return Draw.linkcolor(0.5-Math.sqrt(d.phase)/8);});
- Draw.nodes.enter().insert('circle','.nodes').attr('class','nodes').style('fill',function(d) {return Draw.linkcolor(0.5-Math.sqrt(d.phase)/8);}).attr('r',0).transition().duration(500).attr('r',Const.circler);
+ Draw.nodes=Draw.nodes.data(Draw.layout.nodes(),function(d) {return d.id;}).style('fill',function(d) {return Draw.nodecolor(d.phase);});
+ Draw.nodes.enter().insert('circle','.nodes').attr('class','nodes').style('fill',function(d) {return Draw.nodecolor(d.phase);}).attr('r',0).transition().duration(500).attr('r',Const.circler);
  Draw.nodes.exit().transition().duration(Const.deltime).attr("r",0).remove();
  Draw.nodes.call(Draw.layout.drag);
  Draw.ndtxt=Draw.ndtxt.data(Draw.layout.nodes(),function(d) {return d.id;}).text(function(d) {return d.id;});
@@ -115,4 +142,26 @@ Draw.drawdiffm=function(difmsg) { // show difference of graph, report errors bes
   tp.node().text=difmsg;
   tp.node().textContent=difmsg;
  }
+}
+
+function points(d) {
+
+    var a = [d.source.x, d.source.y];
+    var b = [d.target.x, d.target.y];
+    var r = [];
+    var len = Math.sqrt(Math.pow(a[0]-b[0],2)+Math.pow(a[1]-b[1],2));
+    var s = Math.sign(a[0]-b[0]);
+    r[0] = a;
+    r[2] = b;
+    if (b[0] == a[0]) {
+        r[1] = [a[0] + len/2, (a[1] + b[1]) / 2];
+    }
+    else {
+        var k = (b[1] - a[1]) / (b[0] - a[0]);
+        if(k==0)
+            r[1] = [(a[0]+b[0])/2-len/2,a[1]];
+        else
+            r[1]=[(a[0]+b[0])/2+len*k/2/(Math.sqrt(1+k*k))*s,(a[1]+b[1])/2-1/k*len*k*s/2/(Math.sqrt(1+k*k))];
+    }
+    return r;
 }

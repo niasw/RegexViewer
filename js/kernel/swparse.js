@@ -124,10 +124,17 @@ ENFAbuilder.prototype = {
   return ret;
  },
 
+ aux_dealchar(char,ret) { // aux method to extrude node with character (only used in this.steponce)
+  this.bktUsing[0]=this.bktUsing[1];
+  ret=ret+"e("+char+")"+this.bktUsing[1].idx+';'; // smooth add node with non-char transition
+  this.bktUsing[1]=this.aux_enew(this.bktUsing[1],char);
+  return ret;
+ },
  steponce:function(char) { // return variation
   char=char||this.ptn[this.pos]; // for Chrome compatibility (only Firefox supports default parameter feature)
   var ret=""; // return graph variation
   switch (char) {
+  /* minimal operations */
   case '(': // {...{...(p) => {...{....p.{("")
    this.bktStack.push([this.bktUsing[1],undefined]);
    break;
@@ -136,7 +143,7 @@ ENFAbuilder.prototype = {
    if (!tmpBkt) {ret="Pattern Error: uncoupled ')'.";return ret;}
    this.bktUsing[0]=tmpBkt[0];
    if (tmpBkt[1]) {
-    ret=ret+"L()"+this.bktUsing[1].idx+","+tmpBkt[1].idx; // link with non-char transition
+    ret=ret+"L()"+this.bktUsing[1].idx+","+tmpBkt[1].idx+';'; // link with non-char transition
     this.bktUsing[1].lk(tmpBkt[1]);
     this.bktUsing[1]=tmpBkt[1];
    }
@@ -144,11 +151,11 @@ ENFAbuilder.prototype = {
   case '|': // {...{...(p) => {...{("")|....p.}
    var tmpBkt=this.bktStack.pop(); // the '}'
    if (!tmpBkt[1]) {
-    ret=ret+"e()"+this.bktUsing[1].idx; // extrude with non-char transition
+    ret=ret+"e()"+this.bktUsing[1].idx+';'; // extrude with non-char transition
     tmpBkt[1]=this.aux_enew(this.bktUsing[1]);
    }
    else {
-    ret=ret+"L"+this.bktUsing[1].idx+","+tmpBkt[1].idx; // link with non-char transition
+    ret=ret+"L"+this.bktUsing[1].idx+","+tmpBkt[1].idx+';'; // link with non-char transition
     this.bktUsing[1].lk(tmpBkt[1]);
    }
    this.bktUsing[0]=tmpBkt[0];
@@ -156,17 +163,53 @@ ENFAbuilder.prototype = {
    this.bktStack.push(tmpBkt);
    break;
   case '+': // {...{...(p) => {...{...(p+)
-   ret=ret+"E()"+this.bktUsing[0].idx; // smooth add node with non-char transition
+   ret=ret+"E()"+this.bktUsing[0].idx+';'; // smooth add node with non-char transition
    var tmpNod=this.aux_snew(this.bktUsing[0]);
-   ret=ret+"L"+this.bktUsing[1].idx+","+tmpNod.idx; // link with non-char transition
+   ret=ret+"L"+this.bktUsing[1].idx+","+tmpNod.idx+';'; // link with non-char transition
    this.bktUsing[1].lk(tmpNod);
+   ret=ret+"e()"+this.bktUsing[1].idx+';'; // extrude node with non-char transition (this is to make sure the ')' have no outward transition)
+   this.bktUsing[1]=this.aux_enew(this.bktUsing[1]);
+   break;
+  /* extend operations */
+  case '?': // {...{...(p) => {...{...(p|)
+   ret=ret+"L"+this.bktUsing[0].idx+","+this.bktUsing[1].idx+';'; // link with non-char transition
+   this.bktUsing[0].lk(this.bktUsing[1]);
+   break;
+  case '*': // {...{...(p) => {...{...(p+|)
+   ret=ret+"E()"+this.bktUsing[0].idx+';'; // smooth add node with non-char transition
+   var tmpNod=this.aux_snew(this.bktUsing[0]);
+   ret=ret+"L"+this.bktUsing[1].idx+","+tmpNod.idx+';'; // link with non-char transition
+   this.bktUsing[1].lk(tmpNod);
+/* the following can be optimized
+   ret=ret+"e()"+this.bktUsing[1].idx+';'; // extrude node with non-char transition (this is to make sure the ')' have no outward transition)
+   this.bktUsing[1]=this.aux_enew(this.bktUsing[1]);
+   ret=ret+"L"+this.bktUsing[0].idx+","+this.bktUsing[1].idx+';'; // link with non-char transition
+   this.bktUsing[0].lk(this.bktUsing[1]);
+*/ ret=ret+"e()"+tmpNod.idx+';'; // extrude node with non-char transition (this is to make sure the ')' have no outward transition)
+   this.bktUsing[1]=this.aux_enew(tmpNod);
+   break;
+  case ' ': // show space
+   char='[ ]';
+   this.aux_dealchar(char,ret);
    break;
   case '\\': // special char
-   // TODO
+   this.pos+=1;
+   char=char+this.ptn[this.pos];
+   this.aux_dealchar(char,ret);
+   break;
+  case '[': // character set
+   this.pos+=1;
+   while (this.ptn[this.pos]!=']') {
+    char=char+this.ptn[this.pos];
+    this.pos+=1;
+    if (this.pos>=this.ptn.length) {ret="Pattern Error: uncoupled '['.";return ret;}
+   }
+   char=char+this.ptn[this.pos];
+   this.aux_dealchar(char,ret);
+   break;
+  /* word character */
   default: // {...{...(p) => {...{....p.(c)
-   this.bktUsing[0]=this.bktUsing[1];
-   ret=ret+"e("+char+")"+this.bktUsing[1].idx; // smooth add node with non-char transition
-   this.bktUsing[1]=this.aux_enew(this.bktUsing[1],char);
+   this.aux_dealchar(char,ret);
   }
   this.pos+=1;
   return ret;
@@ -187,6 +230,10 @@ ENFAbuilder.prototype = {
    this.bktUsing=[];
    return ret+"F"; // end with 'F'
   }
+ },
+
+ is_end:function() { // fully evolved or not
+  return this.pos>this.ptn.length;
  },
 
  run:function() { // keep stepping until end

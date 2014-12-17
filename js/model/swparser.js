@@ -45,20 +45,37 @@ Model.SWparser.prototype = {
  case 1:
   if (!this.NFAbuilder) {this.ready();}
   var tmp=this.NFAbuilder.get_snapshot();
-  if (this.NFAbuilder.is_end()) {return [tmp.nfa];}
-//  else {return [tmp.nfa,tmp.nfae];}
-  else {return [tmp.nfa];} // FIXME: ID conflict!
+  return [tmp.nfa];
  case 2:
   if (!this.DFAbuilder) {this.ready();}
   var tmp=this.DFAbuilder.get_snapshot();
-  if (this.DFAbuilder.is_end()) {return [tmp.dfa];}
-//  else {return [tmp.dfa,tmp.nfa];}
-  else {return [tmp.dfa];} // FIXME: ID conflict!
+  return [tmp.dfa];
  default:
  }},
 
- highdump:function(mode) { // return snapshot with bracket info highlighted
+ aux_addPrefix:function(graph,char) { // modify id tags to avoid ID conflict
+  var ret={};
+  ret.initial=char+graph.initial;
+  ret.accept=[];
+  for (it in graph.accept) {ret.accept.push(char+graph.accept[it]);}
+  ret.states={};
+  var tmpnode,tmpchar;
+  for (it1 in graph.states) {
+   tmpnode={'phase':graph.states[it1].phase,'transit':{}};
+   for (it2 in graph.states[it1].transit) {
+    tmpchar={};
+    for (it3 in graph.states[it1].transit[it2]) {
+     tmpchar[char+it3]=graph.states[it1].transit[it2][it3];
+    }
+    tmpnode.transit[it2]=tmpchar;
+   }
+   ret.states[char+it1]=tmpnode;
+  }
+  return ret;
+ },
+ highdump:function(mode,mark) { // return snapshot with bracket info highlighted
  mode=mode||this.mode; // for Chrome compatibility (only Firefox supports default parameter feature)
+ mark=mark||false; // mark=true: add prefix tags to different graph nodes to avoid ID conflict
  switch (mode.value) {
  case 0:
   var ret={};
@@ -74,10 +91,10 @@ Model.SWparser.prototype = {
    tmp={"transit":{},"phase":0};lkl=nodes[it].lkt;
    for (it1 in hgh[num]["marks"]) {
     switch (hgh[num]["marks"][it1]) {
-    case '(': tmp["phase"]+=1;break;
-    case ')': tmp["phase"]+=2;break;
-    case '}': tmp["phase"]+=4;break;
-    case '{': tmp["phase"]+=8;break;
+    case '(': tmp["phase"]=(tmp["phase"]==0)?1:(tmp["phase"]+1)/2;break;
+    case ')': tmp["phase"]=(tmp["phase"]==0)?1:(tmp["phase"]+1)/2;break;
+    case '}': tmp["phase"]=(tmp["phase"]==0)?2:(tmp["phase"]+2)/2;break;
+    case '{': tmp["phase"]=(tmp["phase"]==0)?2:(tmp["phase"]+2)/2;break;
     default:
     }
    }
@@ -96,15 +113,13 @@ Model.SWparser.prototype = {
  case 1:
   if (!this.NFAbuilder) {this.ready();}
   var tmp=this.NFAbuilder.get_snapshot();
-  if (this.NFAbuilder.is_end()) {return [tmp.nfa];}
-//  else {return [tmp.nfa,tmp.nfae];}
-  else {return [tmp.nfa];} // FIXME: ID conflict!
+  if (this.NFAbuilder.is_end()) {return [mark ? this.aux_addPrefix(tmp.nfa,'N') : tmp.nfa];}
+  else {return [mark ? this.aux_addPrefix(tmp.nfa,'N') : tmp.nfa, tmp.nfae];}
  case 2:
   if (!this.DFAbuilder) {this.ready();}
   var tmp=this.DFAbuilder.get_snapshot();
-  if (this.DFAbuilder.is_end()) {return [tmp.dfa];}
-//  else {return [tmp.dfa,tmp.nfa];}
-  else {return [tmp.dfa];} // FIXME: ID conflict!
+  if (this.DFAbuilder.is_end()) {return [mark ? this.aux_addPrefix(tmp.dfa,'D') : tmp.dfa];}
+  else {return [mark ? this.aux_addPrefix(tmp.dfa,'D') : tmp.dfa, mark ? this.aux_addPrefix(tmp.nfa,'N') : tmp.nfa];}
  default:
  }},
 
@@ -121,7 +136,7 @@ Model.SWparser.prototype = {
  ready:function() { // run until ready for the mode
   if (this.mode.value>=1) { // dependency
    this.ENFAbuilder.run();
-   this.NFAbuilder=new nfa_maker(this.snapshot(Model.GRAPH.ENFA)[0]); // share the same algorithm, no need for a copy
+   this.NFAbuilder=new nfa_maker(this.highdump(Model.GRAPH.ENFA)[0]); // share the same algorithm, no need for a copy
    this.NFAbuilder.run=function() {
     while (!this.is_end()) {
      this.iter();
@@ -130,7 +145,7 @@ Model.SWparser.prototype = {
   }
   if (this.mode.value>=2) { // dependency
    this.NFAbuilder.run();
-   this.DFAbuilder=new dfa_maker(this.snapshot(Model.GRAPH.NFA)[0]);
+   this.DFAbuilder=new dfa_maker(this.highdump(Model.GRAPH.NFA)[0]);
    this.DFAbuilder.run=function() {
     while (!this.is_end()) {
      this.iter();
@@ -146,6 +161,21 @@ Model.SWparser.prototype = {
   case 2: this.DFAbuilder.iter();break;
   default:
   }
+ },
+
+ is_end:function() { // fully evolved or not
+  switch (this.mode.value) {
+  case 0: return this.ENFAbuilder.is_end();break;
+  case 1: return this.NFAbuilder.is_end();break;
+  case 2: return this.DFAbuilder.is_end();break;
+  default:
+  }
+ },
+
+ run:function() { // keep stepping until end
+  if (this.mode.value==0) {this.ENFAbuilder.run();} // faster
+  else {while (!this.is_end()) {this.step();}}
+  return this.snapshot();
  },
 
  refresh:function() { // update all

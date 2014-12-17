@@ -16,11 +16,21 @@ Context.ParsePro.init=function(pattern) {
  Context.ParsePro.parser=new Context.parser(pattern);
  if (Context.ParsePro.parser) {Context.ParsePro.parser.setMode(Context.grapht);}
  Context.ParsePro.parser.ready();
- Draw.drawgraph(Model.nodes_links(Context.ParsePro.parser.highdump()));
+ Draw.drawgraph(Model.nodes_links(Context.ParsePro.parser.highdump(undefined,true)));
 }
 Context.ParsePro.step=function() {
  if (!Context.ParsePro.parser) {Context.ParsePro.init();}
  Draw.drawdiffm(Context.ParsePro.parser.step());
- Draw.drawgraph(Model.nodes_links(Context.ParsePro.parser.highdump()));
+ Draw.drawgraph(Model.nodes_links(Context.ParsePro.parser.highdump(undefined,true)));
  Draw.drawstate(Context.ParsePro.parser.hightext());
+}
+Context.ParsePro.is_end=function() {
+ return Context.ParsePro.parser ? Context.ParsePro.parser.is_end() : false; // if not initialized, means to be runned
+}
+Context.ParsePro.run=function() {
+ if (!Context.ParsePro.is_end()) {
+  if (!Context.ParsePro.parser) {Context.ParsePro.init();}
+  Context.ParsePro.parser.run();
+ }
+ Context.ParsePro.step(); // call drawing functions
 }
