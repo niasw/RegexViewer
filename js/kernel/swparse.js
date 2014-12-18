@@ -246,7 +246,7 @@ ENFAbuilder.prototype = {
    ret=ret+this.steponce();
    return ret;
   } else if (this.pos==this.ptn.length) {
-   this.aux_fin(this.bktUsing[1],true); // set final
+   this.aux_fin(this.bktUsing[2],true); // set final
    this.pos+=1;
    while (this.bktStack.length>0) { // clear all uncoupled brackets
     this.steponce(')');

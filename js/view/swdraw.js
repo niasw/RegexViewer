@@ -6,33 +6,45 @@
 /**   dependency: model/swgraph.js (indexOfid)**/
 /**   dependency: /lib/d3.min.js **/
 var Draw={};
+var  bilinks = [];
+var newlinks=[];
+var Tnodes=[], Tlinks=[];
 
-Draw.line = d3.svg.line()
-    .interpolate("basis");
 // force layout
 Draw.canvas=d3.select('div#canvas').append('div').attr('id','svg').append('svg').attr('class','chart center')
  .attr('width',Const.wid).attr('height',Const.hgh);
 Draw.links=Draw.canvas.selectAll(".links"); // later will use .data instead
 Draw.nodes=Draw.canvas.selectAll(".nodes");
+Draw.auxnf=Draw.canvas.selectAll(".auxnf"); // aux lines to mark entry and final
+Draw.auxns=Draw.canvas.selectAll(".auxns");
 Draw.ndtxt=Draw.canvas.selectAll(".ndtxt"); // share data with nodes
 Draw.lktxt=Draw.canvas.selectAll(".lktxt"); // share data with links
 Draw.tick=function() {
- Draw.links
- // .attr("x1", function(d) {return d.source.x;})
- // .attr("y1", function(d) {return d.source.y;})
- // .attr("x2", function(d) {return d.target.x;})
-  //.attr("y2", function(d) {return d.target.y;});
- //   .attr("d",function(d){var t=quad(sample(Draw.line(points(d)), 8));return lineJoin(t[0], t[1], t[2], t[3], 32);});
-    .attr("d",function(d){var t=points(d);return "M"+ t[0]+" Q"+ t[1]+" "+ t[2];});
- Draw.nodes
-  .attr("cx", function(d) {return d.x;})
-  .attr("cy", function(d) {return d.y;});
+    //Draw.links=Tlinks;
+    //Draw.nodes=Tnodes;
+ Draw.links .attr("d",function(d){
+ var ret="M" + d.xy[0].x + "," + d.xy[0].y+"S";
+ for(var it=1;it<d.xy.length-1;it+=1){
+ ret=ret+d.xy[it].x + "," + d.xy[it].y +" ";
+ }ret=ret+d.xy[d.xy.length-1].x + "," + d.xy[d.xy.length-1].y;
+         return ret;
+     });
+ Draw.nodes.attr("transform", function(d) {
+     return "translate(" + d.x + "," + d.y + ")";
+ });
+ var tmpl=Draw.layout.links();
  Draw.lktxt
-  .attr("x", function(d) {return (d.source.x+d.target.x)/2;})
-  .attr("y", function(d) {return (d.source.y+d.target.y)/2+0.4*Const.txtsize;});
+  .attr("x", function(d,i) {return (tmpl[i+1])?d.x*0.4+(tmpl[i].source.x+tmpl[i+1].target.x)*0.3:undefined;})
+  .attr("y", function(d,i) {return (tmpl[i+1])?d.y*0.4+(tmpl[i].source.y+tmpl[i+1].target.y)*0.3+0.4*Const.txtsize:undefined;});
  Draw.ndtxt
   .attr("x", function(d) {return d.x;})
   .attr("y", function(d) {return d.y+0.4*Const.txtsize;});
+ Draw.auxnf
+  .attr("cx", function(d) {return d.x;})
+  .attr("cy", function(d) {return d.y;});
+ Draw.auxns
+  .attr("cx", function(d) {return d.x;})
+  .attr("cy", function(d) {return d.y;});
 }
 Draw.layout=d3.layout.force().size([Const.wid, Const.hgh]).nodes([]).linkDistance(Const.noddist).charge(Const.strngth).on("tick",Draw.tick);
 
@@ -77,7 +89,7 @@ Draw.defs = Draw.canvas.append("defs").selectAll("marker")
     .attr("id", "licensing")
     .attr("viewBox", "0 -5 10 10")
     .attr("refX", 35)
-    .attr("refY", 5)
+    .attr("refY", 1)
     .attr("markerWidth", 6)
     .attr("markerHeight", 6)
     .attr("orient", "auto")
@@ -87,24 +99,33 @@ Draw.defs = Draw.canvas.append("defs").selectAll("marker")
 
 // nodes initialize
 Draw.refresh=function() {
- Draw.links=Draw.links.data(Draw.layout.links(),function(d) {return d.id;});
- Draw.links.style('stroke',function(d) {return Draw.linkcolor(d.phase);}).transition().duration(Const.deltime).style('stroke',function(d) {return Draw.linkcolor(0);});
+ Draw.links=Draw.links.data(bilinks,function(d) {return d.id;});
  Draw.links.enter().insert('path','.nodes').attr('class','links').style('opacity',0).style('stroke',function(d) {return Draw.linkcolor(d.phase);}).transition().duration(Const.deltime).style('opacity',1).style('stroke',function(d) {return Draw.linkcolor(0);})
      .attr("marker-end","url(#licensing)");
  Draw.links.exit().transition().duration(Const.deltime).style('opacity',0).remove();
- Draw.lktxt=Draw.lktxt.data(Draw.layout.links(),function(d) {return d.id;}).text(function(d) {return d.char;});
+ Draw.lktxt=Draw.lktxt.data(newlinks).text(function(d) {return d.char;});
  Draw.lktxt.enter().insert('text','.lktxt').attr('class','lktxt').text(function(d) {return d.char;}).style('opacity',0).transition().duration(Const.deltime).style('opacity',1);
  Draw.lktxt.exit().transition().duration(Const.deltime).style('opacity',0).remove();
- Draw.nodes=Draw.nodes.data(Draw.layout.nodes(),function(d) {return d.id;}).style('fill',function(d) {return Draw.nodecolor(d.phase);});
+ Draw.nodes=Draw.nodes.data(Tnodes,function(d) {return d.id;}).style('fill',function(d) {return Draw.nodecolor(d.phase);});
  Draw.nodes.enter().insert('circle','.nodes').attr('class','nodes').style('fill',function(d) {return Draw.nodecolor(d.phase);}).attr('r',0).transition().duration(Const.deltime).attr('r',Const.circler);
  Draw.nodes.exit().transition().duration(Const.deltime).attr("r",0).remove();
  Draw.nodes.call(Draw.layout.drag);
- Draw.ndtxt=Draw.ndtxt.data(Draw.layout.nodes(),function(d) {return d.id;}).text(function(d) {return d.id;});
+ Draw.ndtxt=Draw.ndtxt.data(Tnodes,function(d) {return d.id;}).text(function(d) {return d.id;});
  Draw.ndtxt.enter().insert('text','.ndtxt').attr('class','ndtxt').text(function(d) {return d.id;}).style('opacity',0).transition().duration(Const.deltime).style('opacity',1);
  Draw.ndtxt.exit().transition().duration(Const.deltime).attr("r",0).remove();
+ 
+ Draw.auxnf=Draw.auxnf.data(Tnodes,function(d) {return d.id;});
+ Draw.auxnf.style('opacity',function(d){console.log(d.final);return d.final?1:0;});
+ Draw.auxnf.enter().insert('circle','.auxnf').attr('class','auxnf').style('opacity',function(d){return d.final?1:0;}).style('fill','none').style('stroke','#ffffff').attr('r',0).transition().duration(Const.deltime).attr('r',Const.circler*0.75);
+ Draw.auxnf.exit().transition().duration(Const.deltime).attr("r",0).remove();
+ Draw.auxns=Draw.auxns.data(Tnodes,function(d) {return d.id;});
+ Draw.auxns.style('opacity',function(d){return d.entry?1:0;});
+ Draw.auxns.enter().insert('circle','.auxns').attr('class','auxns').style('opacity',function(d){return d.entry?1:0;}).style('fill','#ffffff').attr('r',0).transition().duration(Const.deltime).attr('r',Const.circler*0.5);
+ Draw.auxns.exit().transition().duration(Const.deltime).attr("r",0).remove();
  Draw.layout.start();
 }
 Draw.refresh();
+var links = [];var nodes=[];
 Draw.drawgraph=function(nodesAndLinks) { // FIXME: should acquire variation instead of whole graph.
  for (it in nodesAndLinks.nodes) {
   var tmp1=indexOfid(Draw.layout.nodes(),nodesAndLinks.nodes[it].id);
@@ -115,12 +136,71 @@ Draw.drawgraph=function(nodesAndLinks) { // FIXME: should acquire variation inst
    tmp2.x=Draw.layout.nodes()[tmp1].x;tmp2.y=Draw.layout.nodes()[tmp1].y;
   }
  }
- Draw.layout.nodes(nodesAndLinks.nodes);
- for (it in nodesAndLinks.links) {
-  nodesAndLinks.links[it].source=nodesAndLinks.nodes[nodesAndLinks.links[it].source]; // convert id into node
-  nodesAndLinks.links[it].target=nodesAndLinks.nodes[nodesAndLinks.links[it].target];
- }
- Draw.layout.links(nodesAndLinks.links);
+
+
+
+
+    Tnodes = nodesAndLinks.nodes;
+    Tlinks=nodesAndLinks.links;
+
+     nodes= nodesAndLinks.nodes.slice(),
+
+    bilinks=[];
+    links = [];
+	newlinks=[];
+    nodesAndLinks.links.forEach(function(link) {
+        var s = nodes[link.source],
+            t = nodes[link.target],
+            i = {'id':link.id}, // intermediate node
+			tmp1=indexOfid(Draw.layout.nodes(),i.id);
+            if (tmp1==-1) {
+             i.x=Draw.mouse[0]+Math.random(20)-10;i.y=Draw.mouse[1]+Math.random(20)-10;
+            } else {
+             i.x=Draw.layout.nodes()[tmp1].x;i.y=Draw.layout.nodes()[tmp1].y;
+            }
+        i.char=link.char;
+        if(link.target==link.source)
+        {
+            var tt = {'id':"aux1L"+link.id},t2 = {'id':"aux2L"+link.id}; // intermediate node
+			tmp1=indexOfid(Draw.layout.nodes(),tt.id);tmp2=indexOfid(Draw.layout.nodes(),t2.id);
+            if (tmp1==-1) {
+             tt.x=Draw.mouse[0]+Math.random(20)-10;tt.y=Draw.mouse[1]+Math.random(20)-10;
+            } else {
+             tt.x=Draw.layout.nodes()[tmp1].x;tt.y=Draw.layout.nodes()[tmp1].y;
+            }
+            if (tmp2==-1) {
+             t2.x=Draw.mouse[0]+Math.random(20)-10;t2.y=Draw.mouse[1]+Math.random(20)-10;
+            } else {
+             t2.x=Draw.layout.nodes()[tmp2].x;t2.y=Draw.layout.nodes()[tmp2].y;
+            }
+            nodes.push(tt,i,t2);
+            links.push({source: s, target: tt},{source: tt, target: i},{source: i, target: t2},{source: t2, target: t});
+			newlinks.push({},i,{},{});
+            bilinks.push({'xy':[s,tt,i,t2,t],'id':link.id});
+
+        }
+        else
+        {
+            nodes.push(i);
+            links.push({source: s, target: i}, {source: i, target: t});
+			newlinks.push(i,{});
+            bilinks.push({'xy':[s, i, t],'id':link.id});
+        }
+    });
+
+    //Draw.layout.nodes(Tnodes);
+    //Tnodes=Draw.layout.nodes();
+    for (it in nodesAndLinks.links) {
+        nodesAndLinks.links[it].source=nodesAndLinks.nodes[nodesAndLinks.links[it].source]; // convert id into node
+        nodesAndLinks.links[it].target=nodesAndLinks.nodes[nodesAndLinks.links[it].target];
+    }
+    //Tnodes = nodesAndLinks.nodes;
+    //Draw.layout.links(nodesAndLinks.links);
+    //Tlinks=Draw.layout.links();
+    //Draw.layout.nodes(nodesAndLinks.nodes);
+
+    Draw.layout.nodes(nodes,function(d){return d.id;});
+ Draw.layout.links(links);
  Draw.refresh();
 }
 Draw.drawstate=function(hightext) { // which char are we dealing with
