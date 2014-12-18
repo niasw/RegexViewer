@@ -92,8 +92,10 @@ Model.SWparser.prototype = {
    for (it1 in hgh[num]["marks"]) {
     switch (hgh[num]["marks"][it1]) {
     case '(': tmp["phase"]=(tmp["phase"]==0)?1:(tmp["phase"]+1)/2;break;
+    case 'n': tmp["phase"]=(tmp["phase"]==0)?1:(tmp["phase"]+1)/2;break;
     case ')': tmp["phase"]=(tmp["phase"]==0)?1:(tmp["phase"]+1)/2;break;
     case '}': tmp["phase"]=(tmp["phase"]==0)?2:(tmp["phase"]+2)/2;break;
+    case 'o': tmp["phase"]=(tmp["phase"]==0)?2:(tmp["phase"]+2)/2;break;
     case '{': tmp["phase"]=(tmp["phase"]==0)?2:(tmp["phase"]+2)/2;break;
     default:
     }
@@ -121,6 +123,36 @@ Model.SWparser.prototype = {
   if (this.DFAbuilder.is_end()) {return [mark ? this.aux_addPrefix(tmp.dfa,'D') : tmp.dfa];}
   else {return [mark ? this.aux_addPrefix(tmp.dfa,'D') : tmp.dfa, mark ? this.aux_addPrefix(tmp.nfa,'N') : tmp.nfa];}
  default:
+ }},
+
+ dumpgraph:function(mode) { // return graph, warning: ID will be re-allocated.
+ mode=mode||this.mode; // for Chrome compatibility (only Firefox supports default parameter feature)
+ switch (mode.value) {
+ case 0:
+  return this.ENFAbuilder?this.ENFAbuilder.dump():undefined;
+ case 1:
+ case 2:
+  var icicle=this.snapshot()[0]; // only one graph can be dealed with
+  var graph={'entry':undefined,'nodes':{},'final':[]};
+  var mapping={};
+  var tmp;
+  for (it in icicle.states) { // carry nodes
+   tmp=new SWNode().init();
+   graph.nodes[tmp.idx]=tmp;
+   mapping[it]=tmp.idx;
+  }
+  graph.entry=graph.nodes[mapping[icicle.initial]];
+  for (it in icicle.accept) { // carry final
+   graph.final.push(mapping[icicle.accept[it]]);
+  }
+  for (it in icicle.states) { // carry links
+   for (it1 in icicle.states[it].transit) {
+    for (it2 in icicle.states[it].transit[it1]) {
+     graph.nodes[mapping[it]].lk(graph.nodes[mapping[it2]],(it1=="")?undefined:it1);
+    }
+   }
+  }
+  return graph;
  }},
 
  hightext:function() { // return text with highlighted positions

@@ -9,3 +9,4 @@ Const.circler=20; // circle radius
 Const.strngth=-500; // dynamic simulation (force)
 Const.noddist=100; // balance distance for a single link
 Const.deltime=1000; // time during animation
+Const.interval=1500; // time interval for auto navi

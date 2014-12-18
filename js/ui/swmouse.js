@@ -4,4 +4,6 @@
 /** Mouse Settings **/
 /**  dependency: index.html(DOM) **/
 var MouseSet=function() {}
-
+MouseSet.onclick=function(event) {
+ if (Context.runnerInterval) {clearInterval(Context.runnerInterval);}
+}

@@ -87,19 +87,20 @@ Draw.defs = Draw.canvas.append("defs").selectAll("marker")
 
 // nodes initialize
 Draw.refresh=function() {
- Draw.links=Draw.links.data(Draw.layout.links());
- Draw.links.enter().insert('path','.nodes').attr('class','links').style('opacity',0).transition().duration(Const.deltime).style('opacity',1)
+ Draw.links=Draw.links.data(Draw.layout.links(),function(d) {return d.id;});
+ Draw.links.style('stroke',function(d) {return Draw.linkcolor(d.phase);}).transition().duration(Const.deltime).style('stroke',function(d) {return Draw.linkcolor(0);});
+ Draw.links.enter().insert('path','.nodes').attr('class','links').style('opacity',0).style('stroke',function(d) {return Draw.linkcolor(d.phase);}).transition().duration(Const.deltime).style('opacity',1).style('stroke',function(d) {return Draw.linkcolor(0);})
      .attr("marker-end","url(#licensing)");
  Draw.links.exit().transition().duration(Const.deltime).style('opacity',0).remove();
- Draw.lktxt=Draw.lktxt.data(Draw.layout.links()).text(function(d) {return d.char;});
+ Draw.lktxt=Draw.lktxt.data(Draw.layout.links(),function(d) {return d.id;}).text(function(d) {return d.char;});
  Draw.lktxt.enter().insert('text','.lktxt').attr('class','lktxt').text(function(d) {return d.char;}).style('opacity',0).transition().duration(Const.deltime).style('opacity',1);
  Draw.lktxt.exit().transition().duration(Const.deltime).style('opacity',0).remove();
  Draw.nodes=Draw.nodes.data(Draw.layout.nodes(),function(d) {return d.id;}).style('fill',function(d) {return Draw.nodecolor(d.phase);});
- Draw.nodes.enter().insert('circle','.nodes').attr('class','nodes').style('fill',function(d) {return Draw.nodecolor(d.phase);}).attr('r',0).transition().duration(500).attr('r',Const.circler);
+ Draw.nodes.enter().insert('circle','.nodes').attr('class','nodes').style('fill',function(d) {return Draw.nodecolor(d.phase);}).attr('r',0).transition().duration(Const.deltime).attr('r',Const.circler);
  Draw.nodes.exit().transition().duration(Const.deltime).attr("r",0).remove();
  Draw.nodes.call(Draw.layout.drag);
  Draw.ndtxt=Draw.ndtxt.data(Draw.layout.nodes(),function(d) {return d.id;}).text(function(d) {return d.id;});
- Draw.ndtxt.enter().insert('text','.ndtxt').attr('class','ndtxt').text(function(d) {return d.id;}).style('opacity',0).transition().duration(500).style('opacity',1);
+ Draw.ndtxt.enter().insert('text','.ndtxt').attr('class','ndtxt').text(function(d) {return d.id;}).style('opacity',0).transition().duration(Const.deltime).style('opacity',1);
  Draw.ndtxt.exit().transition().duration(Const.deltime).attr("r",0).remove();
  Draw.layout.start();
 }
@@ -116,7 +117,7 @@ Draw.drawgraph=function(nodesAndLinks) { // FIXME: should acquire variation inst
  }
  Draw.layout.nodes(nodesAndLinks.nodes);
  for (it in nodesAndLinks.links) {
-  nodesAndLinks.links[it].source=nodesAndLinks.nodes[nodesAndLinks.links[it].source];
+  nodesAndLinks.links[it].source=nodesAndLinks.nodes[nodesAndLinks.links[it].source]; // convert id into node
   nodesAndLinks.links[it].target=nodesAndLinks.nodes[nodesAndLinks.links[it].target];
  }
  Draw.layout.links(nodesAndLinks.links);

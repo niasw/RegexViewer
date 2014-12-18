@@ -3,20 +3,34 @@
 
 /** Key Settings **/
 /**  dependency: index.html(DOM) **/
+/**  dependency: ui/swconst.js **/
 /**  dependency: control/swinput.js **/
 /**  dependency: control/swparserun.js **/
 /**  dependency: control/swmatchrun.js **/
+/**  dependency: control/swrefresh.js **/
 var KeySet=function() {}
 KeySet.keypress=function(event) {
  if (event.keyCode==13||event.keyCode==39) {
-  switch (Context.mode) {
-  case "parse":
-   Context.ParsePro.step();
+  switch (Context.navitype) {
+  case "aut":
+   if (!Context.runnerInterval) {
+    Context.runnerInterval=setInterval('Context.runner.step();',Const.interval);
+   }
    break;
-  case "match":
-   Context.MatchPro.step();
+  case "run":
+   if (Context.runnerInterval) {
+    clearInterval(Context.runnerInterval);
+    Context.runnerInterval=undefined;
+   }
+   Context.runner.run();
    break;
+  case "man":
   default:
+   if (Context.runnerInterval) {
+    clearInterval(Context.runnerInterval);
+    Context.runnerInterval=undefined;
+   }
+   Context.runner.step();
   }
  }
  if (document.activeElement!=document.getElementById("ptnTxtEdt")&&document.activeElement!=document.getElementById("strTxtEdt")) {

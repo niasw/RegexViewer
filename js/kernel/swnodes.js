@@ -26,7 +26,7 @@ SWNode.clearAll=function() { // remove all SWNodes
 }
 SWNode.clearAll(); // initializing static var
 SWNode.unregister=function(id) { // remove 1 SWNodes
- delete SWNode.register[id];
+ if (SWNode.register[id]) delete SWNode.register[id];
 }
 
 SWNode.getNewID=function() { // find gap in SWNode.register

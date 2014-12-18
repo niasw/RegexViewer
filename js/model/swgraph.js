@@ -25,7 +25,7 @@ Model.nodes_links=function(snapshot) {
   for (it1 in snapshot[it0].states) {
    for (it2 in snapshot[it0].states[it1].transit) {
     for (it3 in snapshot[it0].states[it1].transit[it2]) {
-     links.push({"source":indexOfid(nodes,it1),"target":indexOfid(nodes,it3),"char":it2,"phase":snapshot[it0].states[it1].transit[it2][it3]}); // warning: src and tgt are idx of nodes. not the "index" in the dict
+     links.push({"id":it1+"t"+it3+"c"+it2,"source":indexOfid(nodes,it1),"target":indexOfid(nodes,it3),"char":it2,"phase":snapshot[it0].states[it1].transit[it2][it3]}); // warning: src and tgt are idx of nodes. not the "index" in the dict
     }
    }
   }

@@ -7,7 +7,7 @@
  <link rel="license" href="Apache License 2.0">
  <link rel="icon" href="res/icon.png">
  <title>Regex Viewer --- View Regular Expressions in Graph to Easily Understand the Matching Process.</title>
-</head><body onkeypress="javascript:KeySet.keypress(event);">
+</head><body onkeypress="javascript:KeySet.keypress(event);" onclick="javascript:MouseSet.onclick(event);">
  <div class="wrapper"><p class="center" style="width:1024px;text-align:left;line-height:1pt;padding:0;"><b>RegexViewer</b></p><p class="center" style="width:1024px;text-align:right;line-height:1pt;padding:0 0 10px 0;">@author <i>Liu Yu</i> &amp; <i>Sun Sibai</i> &amp; <i>Tian Chuang</i> &amp; <i>Zhuo Junbao</i> &amp; <i>Zhuo Aonan</i> </p></div>
  <div class="wrapper"><p class="center" style="width:1024px;text-align:center;line-height:15pt;padding:5;">
 Press <b>Enter</b> or <b>-&gt;</b> to Step Forward.
@@ -18,9 +18,6 @@ Press <b>Enter</b> or <b>-&gt;</b> to Step Forward.
   <input type="button" value="Build Nodes" onclick="javascript:Context.ParsePro.init(document.getElementById('ptnTxtEdt').value);"/><br/><br/>
   Content (String) = <input type="text" id="strTxtEdt" value="" onkeydown="javascript:if (event.keyCode==13) {this.select();Context.MatchPro.init(this.value);this.blur();}"/>
   <input type="button" value="Check Match" onclick="javascript:Context.MatchPro.init(document.getElementById('strTxtEdt').value);"/><br/>
-  <br/>Match Option<br/>
-  <input type="checkbox" class="checkbox" id="limStt" value="Strict Start" name="limStt">Strict Start</input><br/>
-  <input type="checkbox" class="checkbox" id="limFnl" value="Strict Final" name="limFnl">Strict Final</input><br/>
   <br/>Parsing Method<br/>
   <input type="radio" class="radio" name="parse" value="SWparser" checked="checked" onkeydown="javascript:this.blur();">Direct Parse</input><br/>
   <input type="radio" class="radio" name="parse" value="LYparser" onkeydown="javascript:this.blur();">Grammar Tree</input><br/>
@@ -28,6 +25,23 @@ Press <b>Enter</b> or <b>-&gt;</b> to Step Forward.
   <input type="radio" class="radio" name="graph" value="ENFA" checked="checked" onkeydown="javascript:this.blur();">ϵ-NFA Graph</input><br/>
   <input type="radio" class="radio" name="graph" value="NFA" onkeydown="javascript:this.blur();"> NFA Graph </input><br/>
   <input type="radio" class="radio" name="graph" value="DFA" onkeydown="javascript:this.blur();"> DFA Graph </input><br/>
+  <br/>Matcher Style<br/>
+  <input type="radio" class="radio" name="match" value="SWmatcher" checked="checked" onkeydown="javascript:this.blur();">Parallel</input><br/>
+  <input type="radio" class="radio" name="match" value="LYmatcher" onkeydown="javascript:this.blur();">Cascade</input><br/>
+  <br/>Match Strategy<br/>
+  <div class="left" style="margin-bottom:20px;">
+   * start <br/>
+   <input type="radio" class="radio" name="stgstart" value="all" onkeydown="javascript:this.blur();">all</input><br/>
+   <input type="radio" class="radio" name="stgstart" value="last" checked="checked" onkeydown="javascript:this.blur();">last</input><br/>
+   <input type="radio" class="radio" name="stgstart" value="first" onkeydown="javascript:this.blur();">first</input><br/>
+   <input type="radio" class="radio" name="stgstart" value="strict" onkeydown="javascript:this.blur();">strict</input><br/>
+  </div><div class="right" style="margin-bottom:20px;">
+   final * <br/>
+   <input type="radio" class="radio" name="stgfinal" value="all" onkeydown="javascript:this.blur();">all</input><br/>
+   <input type="radio" class="radio" name="stgfinal" value="last" onkeydown="javascript:this.blur();">last</input><br/>
+   <input type="radio" class="radio" name="stgfinal" value="first" checked="checked" onkeydown="javascript:this.blur();">first</input><br/>
+   <input type="radio" class="radio" name="stgfinal" value="strict" onkeydown="javascript:this.blur();">strict</input><br/>
+  </div>
   <br/>Navigation<br/>
   <input type="radio" class="radio" name="navi" value="man" checked="checked" onkeydown="javascript:this.blur();"> Manual </input><br/>
   <input type="radio" class="radio" name="navi" value="aut" onkeydown="javascript:this.blur();">Auto Trace</input><br/>
@@ -52,17 +66,21 @@ Press <b>Enter</b> or <b>-&gt;</b> to Step Forward.
  <script src="js/kernel/fa.js"></script>
  <script src="js/kernel/swnodes.js"></script>
  <script src="js/kernel/swparse.js"></script>
+ <script src="js/kernel/swmatch.js"></script>
+ <script src="js/ui/swconst.js"></script>
  <script src="js/model/swmodel.js"></script>
  <script src="js/model/swgraph.js"></script>
  <script src="js/model/swparser.js"></script>
  <script src="js/model/lyparser.js"></script>
+ <script src="js/model/swmatcher.js"></script>
+ <script src="js/model/lymatcher.js"></script>
  <script src="js/control/swinput.js"></script>
- <script src="js/ui/swconst.js"></script>
  <script src="js/view/swdraw.js"></script>
  <script src="js/control/swparserun.js"></script>
- <!--<script src="js/control/swmatchrun.js"></script>-->
+ <script src="js/control/swmatchrun.js"></script>
  <script src="js/control/swrefresh.js"></script>
  <script src="js/ui/swkeys.js"></script>
+ <script src="js/ui/swmouse.js"></script>
  <script src="js/ui/swui.js"></script>
 <div class="center wrapper"><p class="center" style="width:1024px;text-align:center;line-height:15pt;padding:5;">
   This project uses
