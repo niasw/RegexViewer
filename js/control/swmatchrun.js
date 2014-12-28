@@ -9,7 +9,7 @@
 /**  dependency: model/lyparser.js (LYparser)**/
 /**  dependency: model/swmatcher.js (SWmatcher)**/
 /**  dependency: model/lymatcher.js (LYmatcher)**/
-/**  dependency: model/swgraph.js **/
+/**  dependency: model/swtransfer.js **/
 /**  dependency: view/swdraw.js **/
 Context.MatchPro={};
 Context.MatchPro.init=function(content,strategy) {
@@ -23,7 +23,7 @@ Context.MatchPro.init=function(content,strategy) {
 }
 Context.MatchPro.step=function() {
  if (!Context.MatchPro.matcher) {Context.MatchPro.init();}
- Draw.drawdiffm(Context.MatchPro.matcher.step());
+ Draw.drawmsges(Context.MatchPro.matcher.step(),Context.pattern,Context.MatchPro.matcher.result());
  Draw.drawgraph(Model.nodes_links(Context.MatchPro.matcher.highdump()));
  Draw.drawstate(Context.MatchPro.matcher.hightext());
 }

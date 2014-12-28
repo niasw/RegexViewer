@@ -1,12 +1,13 @@
 /** Apache License 2.0 Applies for Scripts here, see NOTICE and LICENSE **/
 /** @author Sun Sibai & Liu Yu & Tian Chuang & Zhuo Junbao & Zhai Aonan **/
-
-/** SWmatcher, parallel search **/
+////////////////////////TODO
+/** LYmatcher, cascade search **/
 /**  dependency: kernel/swnodes.js **/
 /**  dependency: kernel/swparse.js **/
 /**  dependency: kernel/swmatch.js **/
 /**  dependency: model/swmodel.js **/
-Model.SWmatcher=function(graph,content,strategy) {
+/*
+Model.LYmatcher=function(graph,content,strategy) {
  content=content||''; // for Chrome compatibility (only Firefox supports default parameter feature)
  strategy=strategy||{"start":"last","final":"first"}; // default: irreducible matches
  this.title="SWmatcher";
@@ -60,21 +61,31 @@ Model.SWmatcher.prototype = {
   }
   return ret;
  },
- highdump:function(mark) { // return snapshot with bracket info highlighted
-  mark=mark||false;
-  var ret=mark?this.ENFAmatcher.dumpsort(true):this.ENFAmatcher.dump(true); // mark:sort ID, true:show mapping
-  var map=ret.mapping;
-  ret=ret.graph;
-  var hgh=this.ENFAmatcher.high(); // highlight
-console.log(hgh);
+ highdump:function() { // return snapshot with bracket info highlighted
+  var ret={};
+  var dmp=this.ENFAmatcher.dump(); // highlight
+  ret["initial"]=dmp.entry.idx;
+  ret["accept"]=dmp.final;
+  ret["states"]={};
+  var nodes=dmp.nodes;
   var tmp,lkl; // node, link list
-  for (it in ret.nodes) {
-   tmp=ret.nodes[it];lkl=ret.nodes[it].lkt;tmp["phase"]=hgh[it]?((ret.final.indexOf(it)!=-1)?2:1):0;
-   for (it1 in lkl) {
-    lkl[it1]
+  var num; // edge phase
+  for (it in nodes) {
+   tmp={"transit":{},"phase":0};lkl=nodes[it].lkt;
+   tmp.phase=dmp.active[it]?((dmp.final.indexOf(it)!=-1)?2:1):0;
+   for (it2 in lkl) {
+    num=(lkl[it2].length>=3)?lkl[it2][2]:0; // 0 for undefined
+    if (lkl[it2][1]) {
+     if (!tmp["transit"][lkl[it2][1]]) {tmp["transit"][lkl[it2][1]]={};}
+     tmp["transit"][lkl[it2][1]][lkl[it2][0].idx]=num; // in my builder, edges should be highlighted with animation rather than colors
+    } else { // undefined => ""
+     if (!tmp["transit"][""]) {tmp["transit"][""]={};}
+     tmp["transit"][""][lkl[it2][0].idx]=num;
+    }
    }
+   ret["states"][nodes[it].idx]=tmp;
   }
-  return [Model.graph2dict(ret,true)]; // phase on
+  return [ret];
  },
 
  hightext:function() { // return text with highlighted positions
@@ -116,4 +127,4 @@ console.log(hgh);
  setContent:function(content) { // new content
   if (this.content!=content) {this.content=content;this.reset();}
  }
-};
+};*/

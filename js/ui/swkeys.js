@@ -10,7 +10,7 @@
 /**  dependency: control/swrefresh.js **/
 var KeySet=function() {}
 KeySet.keypress=function(event) {
- if (event.keyCode==13||event.keyCode==39) {
+ if (event.keyCode==13||event.keyCode==39||event.keyCode==34||event.keyCode==40) {
   switch (Context.navitype) {
   case "aut":
    if (!Context.runnerInterval) {
@@ -32,7 +32,7 @@ KeySet.keypress=function(event) {
    }
    Context.runner.step();
   }
- }
+ } else {console.log('key pressed:');console.log(event.keyCode);}
  if (document.activeElement!=document.getElementById("ptnTxtEdt")&&document.activeElement!=document.getElementById("strTxtEdt")) {
   event.preventDefault(); // non-IE
   event.returnValue=false; // IE

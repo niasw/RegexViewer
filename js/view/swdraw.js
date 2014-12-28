@@ -3,7 +3,7 @@
 
 /** View **/
 /**   dependency: ui/swconst.js **/
-/**   dependency: model/swgraph.js (indexOfid)**/
+/**   dependency: model/swnodes.js (indexOfkey)**/
 /**   dependency: /lib/d3.min.js **/
 var Draw={};
 var  bilinks = [];
@@ -115,7 +115,7 @@ Draw.refresh=function() {
  Draw.ndtxt.exit().transition().duration(Const.deltime).attr("r",0).remove();
  
  Draw.auxnf=Draw.auxnf.data(Tnodes,function(d) {return d.id;});
- Draw.auxnf.style('opacity',function(d){console.log(d.final);return d.final?1:0;});
+ Draw.auxnf.style('opacity',function(d){return d.final?1:0;});
  Draw.auxnf.enter().insert('circle','.auxnf').attr('class','auxnf').style('opacity',function(d){return d.final?1:0;}).style('fill','none').style('stroke','#ffffff').attr('r',0).transition().duration(Const.deltime).attr('r',Const.circler*0.75);
  Draw.auxnf.exit().transition().duration(Const.deltime).attr("r",0).remove();
  Draw.auxns=Draw.auxns.data(Tnodes,function(d) {return d.id;});
@@ -128,7 +128,7 @@ Draw.refresh();
 var links = [];var nodes=[];
 Draw.drawgraph=function(nodesAndLinks) { // FIXME: should acquire variation instead of whole graph.
  for (it in nodesAndLinks.nodes) {
-  var tmp1=indexOfid(Draw.layout.nodes(),nodesAndLinks.nodes[it].id);
+  var tmp1=indexOfkey(Draw.layout.nodes(),nodesAndLinks.nodes[it].id,'id');
   var tmp2=nodesAndLinks.nodes[it];
   if (tmp1==-1) {
    tmp2.x=Draw.mouse[0]+Math.random(20)-10;tmp2.y=Draw.mouse[1]+Math.random(20)-10;
@@ -152,7 +152,7 @@ Draw.drawgraph=function(nodesAndLinks) { // FIXME: should acquire variation inst
         var s = nodes[link.source],
             t = nodes[link.target],
             i = {'id':link.id}, // intermediate node
-			tmp1=indexOfid(Draw.layout.nodes(),i.id);
+			tmp1=indexOfkey(Draw.layout.nodes(),i.id,'id');
             if (tmp1==-1) {
              i.x=Draw.mouse[0]+Math.random(20)-10;i.y=Draw.mouse[1]+Math.random(20)-10;
             } else {
@@ -162,7 +162,7 @@ Draw.drawgraph=function(nodesAndLinks) { // FIXME: should acquire variation inst
         if(link.target==link.source)
         {
             var tt = {'id':"aux1L"+link.id},t2 = {'id':"aux2L"+link.id}; // intermediate node
-			tmp1=indexOfid(Draw.layout.nodes(),tt.id);tmp2=indexOfid(Draw.layout.nodes(),t2.id);
+			tmp1=indexOfkey(Draw.layout.nodes(),tt.id,'id');tmp2=indexOfkey(Draw.layout.nodes(),t2.id,'id');
             if (tmp1==-1) {
              tt.x=Draw.mouse[0]+Math.random(20)-10;tt.y=Draw.mouse[1]+Math.random(20)-10;
             } else {
@@ -213,15 +213,39 @@ Draw.drawstate=function(hightext) { // which char are we dealing with
   tp.node().textContent=hightext[it].txt;
  }
 }
-Draw.drawdiffm=function(difmsg) { // show difference of graph, report errors besides
+Draw.drawmsges=function(difmsg,pattern,matchresult) {
+/* differ message: show difference of graph, report errors besides
+ * pattern: the pattern
+ * match result: matched result
+ */
+ var tp;
  var txt=d3.select('div#difMessage');
  txt.selectAll('p').remove();
  if (difmsg) {
-  var tp=txt.append('p');
+  tp=txt.append('p');
   tp.attr('class','pre');
   tp.attr('style','display:inline;');
   tp.node().text=difmsg;
   tp.node().textContent=difmsg;
+ }
+ var ptn=d3.select('div#regexResult');
+ ptn.selectAll('p').remove();
+ if (pattern) {
+  tp=ptn.append('p');
+  tp.attr('class','pre');
+  tp.attr('style','display:inline;');
+  tp.node().text=pattern;
+  tp.node().textContent=pattern;
+ }
+ var mch=d3.select('div#matchResult');
+ mch.selectAll('p').remove();
+ if (matchresult) {
+  for (it in matchresult) {
+   tp=mch.append('p');
+   tp.attr('class','pre');
+   tp.node().text=matchresult[it];
+   tp.node().textContent=matchresult[it];
+  }
  }
 }
 

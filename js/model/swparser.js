@@ -2,10 +2,9 @@
 /** @author Sun Sibai & Liu Yu & Tian Chuang & Zhuo Junbao & Zhai Aonan **/
 
 /** SWparser, Direct Parsing **/
-/**  dependency: kernel/swnodes.js **/
-/**  dependency: kernel/swparse.js **/
-/**  dependency: kernel/fa.js **/
-/**  dependency: model/swmodel.js **/
+/**  dependency: kernel/swparse.js (for ENFA) **/
+/**  dependency: kernel/fa.js (for NFA,DFA) **/
+/**  dependency: model/swfmswitch.js **/
 Model.SWparser=function(pattern) {
  pattern=pattern||''; // for Chrome compatibility (only Firefox supports default parameter feature)
  this.title="SWparser";
@@ -22,26 +21,7 @@ Model.SWparser.prototype = {
  mode=mode||this.mode; // for Chrome compatibility (only Firefox supports default parameter feature)
  switch (mode.value) {
  case 0:
-  var ret={};
-  ret["initial"]=this.ENFAbuilder.graph.entry.idx;
-  ret["accept"]=this.ENFAbuilder.graph.final;
-  ret["states"]={};
-  var nodes=this.ENFAbuilder.graph.nodes;
-  var tmp,lkl; // node, link list
-  for (it in nodes) {
-   tmp={"transit":{}};lkl=nodes[it].lkt;
-   for (it2 in lkl) {
-    if (lkl[it2][1]) {
-     if (!tmp["transit"][lkl[it2][1]]) {tmp["transit"][lkl[it2][1]]={};}
-     tmp["transit"][lkl[it2][1]][lkl[it2][0].idx]=0; // set structure: replace 'true' with '0'
-    } else { // undefined => ""
-     if (!tmp["transit"][""]) {tmp["transit"][""]={};}
-     tmp["transit"][""][lkl[it2][0].idx]=0; // set structure: replace 'true' with '0'
-    }
-   }
-   ret["states"][nodes[it].idx]=tmp;
-  }
-  return [ret];
+  return [Model.graph2dict(this.ENFAbuilder.graph)];
  case 1:
   if (!this.NFAbuilder) {this.ready();}
   var tmp=this.NFAbuilder.get_snapshot();
@@ -78,19 +58,15 @@ Model.SWparser.prototype = {
  mark=mark||false; // mark=true: add prefix tags to different graph nodes to avoid ID conflict
  switch (mode.value) {
  case 0:
-  var ret={};
+  var ret=mark?this.ENFAbuilder.dumpsort(true):this.ENFAbuilder.dump(true); // mark:sort ID, true:show mapping
+  var map=ret.mapping;
+  ret=ret.graph;
   var hgh=this.ENFAbuilder.high(); // highlight
-  ret["initial"]=this.ENFAbuilder.graph.entry.idx;
-  ret["accept"]=this.ENFAbuilder.graph.final;
-  ret["states"]={};
-  var nodes=this.ENFAbuilder.graph.nodes;
   var tmp,lkl; // node, link list
-  var num=-1;
-  for (it in nodes) {
-   num+=1;
-   tmp={"transit":{},"phase":0};lkl=nodes[it].lkt;
-   for (it1 in hgh[num]["marks"]) {
-    switch (hgh[num]["marks"][it1]) {
+  for (it in ret.nodes) {
+   tmp=ret.nodes[it];tmp["phase"]=0;
+   for (it1 in hgh[it]) {
+    switch (hgh[it][it1]) {
     case '(': tmp["phase"]=(tmp["phase"]==0)?1:(tmp["phase"]+1)/2;break;
     case 'n': tmp["phase"]=(tmp["phase"]==0)?1:(tmp["phase"]+1)/2;break;
     case ')': tmp["phase"]=(tmp["phase"]==0)?1:(tmp["phase"]+1)/2;break;
@@ -100,18 +76,8 @@ Model.SWparser.prototype = {
     default:
     }
    }
-   for (it2 in lkl) {
-    if (lkl[it2][1]) {
-     if (!tmp["transit"][lkl[it2][1]]) {tmp["transit"][lkl[it2][1]]={};}
-     tmp["transit"][lkl[it2][1]][lkl[it2][0].idx]=0; // in my builder, edges should be highlighted with animation rather than colors
-    } else { // undefined => ""
-     if (!tmp["transit"][""]) {tmp["transit"][""]={};}
-     tmp["transit"][""][lkl[it2][0].idx]=0;
-    }
-   }
-   ret["states"][nodes[it].idx]=tmp;
   }
-  return [ret];
+  return [Model.graph2dict(ret,true)]; // phase on
  case 1:
   if (!this.NFAbuilder) {this.ready();}
   var tmp=this.NFAbuilder.get_snapshot();
@@ -132,27 +98,7 @@ Model.SWparser.prototype = {
   return this.ENFAbuilder?this.ENFAbuilder.dump():undefined;
  case 1:
  case 2:
-  var icicle=this.snapshot()[0]; // only one graph can be dealed with
-  var graph={'entry':undefined,'nodes':{},'final':[]};
-  var mapping={};
-  var tmp;
-  for (it in icicle.states) { // carry nodes
-   tmp=new SWNode().init();
-   graph.nodes[tmp.idx]=tmp;
-   mapping[it]=tmp.idx;
-  }
-  graph.entry=graph.nodes[mapping[icicle.initial]];
-  for (it in icicle.accept) { // carry final
-   graph.final.push(mapping[icicle.accept[it]]);
-  }
-  for (it in icicle.states) { // carry links
-   for (it1 in icicle.states[it].transit) {
-    for (it2 in icicle.states[it].transit[it1]) {
-     graph.nodes[mapping[it]].lk(graph.nodes[mapping[it2]],(it1=="")?undefined:it1);
-    }
-   }
-  }
-  return graph;
+  return Model.dict2graph(this.snapshot()[0]); // only one graph can be dealed with
  }},
 
  hightext:function() { // return text with highlighted positions
@@ -168,7 +114,7 @@ Model.SWparser.prototype = {
  ready:function() { // run until ready for the mode
   if (this.mode.value>=1) { // dependency
    this.ENFAbuilder.run();
-   this.NFAbuilder=new nfa_maker(this.highdump(Model.GRAPH.ENFA)[0]); // share the same algorithm, no need for a copy
+   this.NFAbuilder=new nfa_maker(this.highdump(Model.GRAPH.ENFA,true)[0]); // NFA: share the same algorithm, no need for a copy, true:sort ID
    this.NFAbuilder.run=function() {
     while (!this.is_end()) {
      this.iter();

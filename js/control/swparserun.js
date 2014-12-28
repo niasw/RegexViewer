@@ -6,7 +6,7 @@
 /**  dependency: control/swinput.js **/
 /**  dependency: model/swparser.js (SWparser)**/
 /**  dependency: model/lyparser.js (LYparser)**/
-/**  dependency: model/swgraph.js **/
+/**  dependency: model/swtransfer.js **/
 /**  dependency: view/swdraw.js **/
 Context.ParsePro={};
 Context.ParsePro.init=function(pattern) {
@@ -20,7 +20,7 @@ Context.ParsePro.init=function(pattern) {
 }
 Context.ParsePro.step=function() {
  if (!Context.ParsePro.parser) {Context.ParsePro.init();}
- Draw.drawdiffm(Context.ParsePro.parser.step());
+ Draw.drawmsges(Context.ParsePro.parser.step(),Context.pattern,[]);
  Draw.drawgraph(Model.nodes_links(Context.ParsePro.parser.highdump(undefined,true)));
  Draw.drawstate(Context.ParsePro.parser.hightext());
 }
