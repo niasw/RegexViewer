@@ -1,118 +1,88 @@
 /** Apache License 2.0 Applies for Scripts here, see NOTICE and LICENSE **/
 /** @author Sun Sibai & Liu Yu & Tian Chuang & Zhuo Junbao & Zhai Aonan **/
-////////////////////////TODO
+
 /** LYmatcher, cascade search **/
-/**  dependency: kernel/swnodes.js **/
-/**  dependency: kernel/swparse.js **/
-/**  dependency: kernel/swmatch.js **/
 /**  dependency: model/swmodel.js **/
-/*
-Model.LYmatcher=function(graph,content,strategy) {
+/**  dependency: kernel/swfmswitch.js **/
+
+Model.LYmatcher=function(graph,content,strategy,mode) {
  content=content||''; // for Chrome compatibility (only Firefox supports default parameter feature)
- strategy=strategy||{"start":"last","final":"first"}; // default: irreducible matches
- this.title="SWmatcher";
+ strategy=strategy||{"start":"strict","final":"strict"}; // default: strict matches
+ mode=mode||'tom'; // tom for noBackTrace, bt for BackTrace. Liu Yu didnot write NFABackTraceMatcher & ENFAnoBackTraceMatcher ... That will be the problem.
+ this.title="LYmatcher";
  this.content=content;
- this.ENFAmatcher=new ENFAmatcher(graph,content,strategy);
+ this.mode=mode;
+ if (graph.initial!=undefined) {this.graph=graph;}
+ else if (graph.entry!=undefined) {this.graph=Model.graph2dict(graph);}
+ else {console.log("ENFAmatcher init: invalid graph!");}
+ this.ENFABackTraceMatcher=new bt_nfae_matcher(this.graph);
+ this.ENFABackTraceMatcher.init(content);
+ this.NFAnoBackTraceMatcher=new tom_nfa_matcher(this.graph);
+ this.NFAnoBackTraceMatcher.init(content);
 };
-Model.SWmatcher.prototype = {
- reset:function() {this.ENFAmatcher.reset();},
- clean:function() {this.ENFAmatcher.clean();},
+Model.LYmatcher.prototype = {
+ reset:function() {this.ENFABackTraceMatcher.init(this.content);this.NFAnoBackTraceMatcher.init(this.content);},
+ clean:function() {}, // there is a garbage collector in fa.js & utils.js
+//TODO: currently only strict match supported
 
  snapshot:function() { // return snapshot of current Graph
-  var ret={};
-  ret["initial"]=this.ENFAbuilder.graph.entry.idx;
-  ret["accept"]=this.ENFAbuilder.graph.final;
-  ret["states"]={};
-  var nodes=this.ENFAbuilder.graph.nodes;
-  var tmp,lkl; // node, link list
-  for (it in nodes) {
-   tmp={"transit":{}};lkl=nodes[it].lkt;
-   for (it2 in lkl) {
-    if (lkl[it2][1]) {
-     if (!tmp["transit"][lkl[it2][1]]) {tmp["transit"][lkl[it2][1]]={};}
-     tmp["transit"][lkl[it2][1]][lkl[it2][0].idx]=0; // set structure: replace 'true' with '0'
-    } else { // undefined => ""
-     if (!tmp["transit"][""]) {tmp["transit"][""]={};}
-     tmp["transit"][""][lkl[it2][0].idx]=0; // set structure: replace 'true' with '0'
-    }
-   }
-   ret["states"][nodes[it].idx]=tmp;
+  switch (this.mode) {
+  case 'bt':
+   return [this.ENFABackTraceMatcher.get_snapshot().nfae];
+  case 'tom':
+   return [this.NFAnoBackTraceMatcher.get_snapshot().nfa];
   }
-  return [ret];
  },
-
- aux_addPrefix:function(graph,char) { // modify id tags to avoid ID conflict
-  var ret={};
-  ret.initial=char+graph.initial;
-  ret.accept=[];
-  for (it in graph.accept) {ret.accept.push(char+graph.accept[it]);}
-  ret.states={};
-  var tmpnode,tmpchar;
-  for (it1 in graph.states) {
-   tmpnode={'phase':graph.states[it1].phase,'transit':{}};
-   for (it2 in graph.states[it1].transit) {
-    tmpchar={};
-    for (it3 in graph.states[it1].transit[it2]) {
-     tmpchar[char+it3]=graph.states[it1].transit[it2][it3];
-    }
-    tmpnode.transit[it2]=tmpchar;
-   }
-   ret.states[char+it1]=tmpnode;
+ highdump:function(mark) { // return snapshot with active ID
+  switch (this.mode) {
+  case 'bt':
+   return [this.ENFABackTraceMatcher.get_snapshot().nfae];
+  case 'tom':
+   return [this.NFAnoBackTraceMatcher.get_snapshot().nfa];
   }
-  return ret;
- },
- highdump:function() { // return snapshot with bracket info highlighted
-  var ret={};
-  var dmp=this.ENFAmatcher.dump(); // highlight
-  ret["initial"]=dmp.entry.idx;
-  ret["accept"]=dmp.final;
-  ret["states"]={};
-  var nodes=dmp.nodes;
-  var tmp,lkl; // node, link list
-  var num; // edge phase
-  for (it in nodes) {
-   tmp={"transit":{},"phase":0};lkl=nodes[it].lkt;
-   tmp.phase=dmp.active[it]?((dmp.final.indexOf(it)!=-1)?2:1):0;
-   for (it2 in lkl) {
-    num=(lkl[it2].length>=3)?lkl[it2][2]:0; // 0 for undefined
-    if (lkl[it2][1]) {
-     if (!tmp["transit"][lkl[it2][1]]) {tmp["transit"][lkl[it2][1]]={};}
-     tmp["transit"][lkl[it2][1]][lkl[it2][0].idx]=num; // in my builder, edges should be highlighted with animation rather than colors
-    } else { // undefined => ""
-     if (!tmp["transit"][""]) {tmp["transit"][""]={};}
-     tmp["transit"][""][lkl[it2][0].idx]=num;
-    }
-   }
-   ret["states"][nodes[it].idx]=tmp;
-  }
-  return [ret];
  },
 
  hightext:function() { // return text with highlighted positions
-  var ret=[];
-  var pos=this.ENFAmatcher.pos;
-  var ctt=this.ENFAmatcher.ctt;
-  if (pos>0&&ctt.length>0) {ret.push({"txt":ctt.substr(0,pos),"phase":0});}
-  if (ctt.length>0) {ret.push({"txt":ctt[pos],"phase":1});}
-  if (ctt.length>0&&pos<ctt.length-1) {ret.push({"txt":ctt.substr(pos+1),"phase":0});}
-  return ret;
+  switch (this.mode) {
+  case 'bt':
+   return [this.ENFABackTraceMatcher.get_snapshot().str];
+  case 'tom':
+   return [this.NFAnoBackTraceMatcher.get_snapshot().str];
+  }
  },
 
  step:function() { // iter
-  return this.ENFAmatcher.step();
+  switch (this.mode) {
+  case 'bt':
+   this.ENFABackTraceMatcher.iter();
+   break;
+  case 'tom':
+   this.NFAnoBackTraceMatcher.iter();
+   break;
+  }
  },
 
  is_end:function() { // fully evolved or not
-  return this.ENFAmatcher.is_end();
+  switch (this.mode) {
+  case 'bt':
+   return this.ENFABackTraceMatcher.is_end();
+  case 'tom':
+   return this.NFAnoBackTraceMatcher.is_end();
+  }
  },
 
  run:function() { // keep stepping until end
-  this.ENFAmatcher.run();
+  while (!this.is_end()) {this.step();}
   return this.snapshot();
  },
 
  result:function() { // return matched results
-  return this.ENFAmatcher.result();
+  switch (this.mode) {
+  case 'bt':
+   return this.ENFABackTraceMatcher.is_match();
+  case 'tom':
+   return this.NFAnoBackTraceMatcher.is_match();
+  }
  },
 
  refresh:function() { // reset all
@@ -126,5 +96,9 @@ Model.SWmatcher.prototype = {
 
  setContent:function(content) { // new content
   if (this.content!=content) {this.content=content;this.reset();}
+ },
+
+ setMode:function(mode) { // new mode (bt | tom)
+  if (this.mode!=mode) {this.mode=mode;this.reset();}
  }
-};*/
+};

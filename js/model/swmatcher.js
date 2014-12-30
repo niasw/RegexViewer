@@ -17,62 +17,23 @@ Model.SWmatcher.prototype = {
  reset:function() {this.ENFAmatcher.reset();},
  clean:function() {this.ENFAmatcher.clean();},
 
- snapshot:function() { // return snapshot of current Graph
-  var ret={};
-  ret["initial"]=this.ENFAbuilder.graph.entry.idx;
-  ret["accept"]=this.ENFAbuilder.graph.final;
-  ret["states"]={};
-  var nodes=this.ENFAbuilder.graph.nodes;
-  var tmp,lkl; // node, link list
-  for (it in nodes) {
-   tmp={"transit":{}};lkl=nodes[it].lkt;
-   for (it2 in lkl) {
-    if (lkl[it2][1]) {
-     if (!tmp["transit"][lkl[it2][1]]) {tmp["transit"][lkl[it2][1]]={};}
-     tmp["transit"][lkl[it2][1]][lkl[it2][0].idx]=0; // set structure: replace 'true' with '0'
-    } else { // undefined => ""
-     if (!tmp["transit"][""]) {tmp["transit"][""]={};}
-     tmp["transit"][""][lkl[it2][0].idx]=0; // set structure: replace 'true' with '0'
-    }
-   }
-   ret["states"][nodes[it].idx]=tmp;
-  }
-  return [ret];
- },
-
- aux_addPrefix:function(graph,char) { // modify id tags to avoid ID conflict
-  var ret={};
-  ret.initial=char+graph.initial;
-  ret.accept=[];
-  for (it in graph.accept) {ret.accept.push(char+graph.accept[it]);}
-  ret.states={};
-  var tmpnode,tmpchar;
-  for (it1 in graph.states) {
-   tmpnode={'phase':graph.states[it1].phase,'transit':{}};
-   for (it2 in graph.states[it1].transit) {
-    tmpchar={};
-    for (it3 in graph.states[it1].transit[it2]) {
-     tmpchar[char+it3]=graph.states[it1].transit[it2][it3];
-    }
-    tmpnode.transit[it2]=tmpchar;
-   }
-   ret.states[char+it1]=tmpnode;
-  }
-  return ret;
- },
- highdump:function(mark) { // return snapshot with bracket info highlighted
+ snapshot:function(mark) { // return snapshot of current Graph
   mark=mark||false;
   var ret=mark?this.ENFAmatcher.dumpsort(true):this.ENFAmatcher.dump(true); // mark:sort ID, true:show mapping
   var map=ret.mapping;
-  ret=ret.graph;
+  ret=ret.graph; // already have edge phase
+  return [Model.graph2dict(ret,false)]; // phase on
+ },
+
+ highdump:function(mark) { // return snapshot with active ID
+  mark=mark||false;
+  var ret=mark?this.ENFAmatcher.dumpsort(true):this.ENFAmatcher.dump(true); // mark:sort ID, true:show mapping
+  var map=ret.mapping;
+  ret=ret.graph; // already have edge phase
   var hgh=this.ENFAmatcher.high(); // highlight
-console.log(hgh);
-  var tmp,lkl; // node, link list
+  var tmp; // node, link list
   for (it in ret.nodes) {
-   tmp=ret.nodes[it];lkl=ret.nodes[it].lkt;tmp["phase"]=hgh[it]?((ret.final.indexOf(it)!=-1)?2:1):0;
-   for (it1 in lkl) {
-    lkl[it1]
-   }
+   tmp=ret.nodes[it];tmp["phase"]=hgh[it]?((ret.final.indexOf(it)!=-1)?2:1):0;
   }
   return [Model.graph2dict(ret,true)]; // phase on
  },

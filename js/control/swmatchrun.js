@@ -19,6 +19,17 @@ Context.MatchPro.init=function(content,strategy) {
  Context.mode="match";
  if (Context.MatchPro.matcher) {Context.MatchPro.matcher.clean();}
  Context.MatchPro.matcher=new Context.matcher(Context.ParsePro.parser.dumpgraph(),content,Context.strategy);
+ if (Context.matcher.title=='LYmatcher') {
+  switch (Context.grapht.value) {
+  case 0: // ENFA
+   Context.MatchPro.matcher.setMode('bt');
+   break;
+  case 1: // NFA
+  case 2: // DFA
+   Context.MatchPro.matcher.setMode('tom');
+   break;
+  }
+ }
  Draw.drawgraph(Model.nodes_links(Context.MatchPro.matcher.highdump()));
 }
 Context.MatchPro.step=function() {

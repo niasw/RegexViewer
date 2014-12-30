@@ -3,6 +3,7 @@
 
 /** matching content string parallelly **/
 /**  dependency: kernel/swgraph.js **/
+/**  dependency: kernel/swfmswitch.js **/
 
 // SWMatcher
 var ENFAmatcher = function(graph, content, strategy) { // Matcher for ENFA is compatible for NFA and DFA, so once we accomplished ENFA Matcher, NFA and DFA Matchers are already here.
@@ -15,7 +16,9 @@ var ENFAmatcher = function(graph, content, strategy) { // Matcher for ENFA is co
   *   final = accept set F (sub-list of Node.allfin)
   *   active = active states (new!)
   */
- this.graph=graph;
+ if (graph.entry!=undefined) {this.graph=graph;}
+ else if (graph.initial!=undefined) {this.graph=Model.dict2graph(graph);}
+ else {console.log("ENFAmatcher init: invalid graph!");}
  /*
   * ctt: content string
   * pos: position of char in content we are dealing with

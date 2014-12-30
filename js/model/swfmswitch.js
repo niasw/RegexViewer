@@ -31,12 +31,12 @@ Model.graph2dict=function(graph,phaseOn) { // graph form is easier to extend new
 
 Model.dict2graph=function(dict,phaseOn) { // dict form is smaller, and easier to print out, but harder to read and harder to extend
  phaseOn=phaseOn||false;
- var ret=new GWGraph().init();
+ var ret=new SWGraph().init();
  var map={};ret.del(ret.entry);
  var tmp;
  for (it in dict.states) { // transfer nodes
   tmp=ret.new();
-  map[this.nodes[it].idx]=tmp.idx;
+  map[it]=tmp.idx;
  }
  for (it in dict.states) { // transfer links
   for (it1 in dict.states[it].transit) {
