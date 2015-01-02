@@ -5,6 +5,7 @@
 /**  dependency: kernel/parse.js **/
 /**  dependency: kernel/fa.js **/
 /**  dependency: model/swmodel.js **/
+/**  dependency: model/swfmswitch.js **/
 Model.LYparser=function(pattern) {
  pattern=pattern||''; // for Chrome compatibility (only Firefox supports default parameter feature)
  this.title="LYparser";
@@ -77,35 +78,10 @@ Model.LYparser.prototype = {
  default:
  }},
 
- dumpgraph:function(mode) { // return graph, warning: ID will be re-allocated.
- mode=mode||this.mode; // for Chrome compatibility (only Firefox supports default parameter feature)
- switch (mode.value) {
- case 0:
-  return this.ENFAbuilder?this.ENFAbuilder.dump():undefined;
- case 1:
- case 2:
-  var icicle=this.snapshot()[0]; // only one graph can be dealed with
-  var graph={'entry':undefined,'nodes':{},'final':[]};
-  var mapping={};
-  var tmp;
-  for (it in icicle.states) { // carry nodes
-   tmp=new SWNode().init();
-   graph.nodes[tmp.idx]=tmp;
-   mapping[it]=tmp.idx;
-  }
-  graph.entry=graph.nodes[mapping[icicle.initial]];
-  for (it in icicle.accept) { // carry final
-   graph.final.push(mapping[icicle.accept[it]]);
-  }
-  for (it in icicle.states) { // carry links
-   for (it1 in icicle.states[it].transit) {
-    for (it2 in icicle.states[it].transit[it1]) {
-     graph.nodes[mapping[it]].lk(graph.nodes[mapping[it2]],(it1=="")?undefined:it1);
-    }
-   }
-  }
-  return graph;
- }},
+ dumpgraph:function(mode) { // return graph
+  mode=mode||this.mode; // for Chrome compatibility (only Firefox supports default parameter feature)
+  return Model.dict2graph(this.snapshot(mode)[0]);
+ },
 
  hightext:function() { // return text with highlighted positions
   return fmt_ast(this.ENFAbuilder.get_snapshot()['ast']);
