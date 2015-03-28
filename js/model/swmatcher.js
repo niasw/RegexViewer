@@ -31,9 +31,12 @@ Model.SWmatcher.prototype = {
   var map=ret.mapping;
   ret=ret.graph; // already have edge phase
   var hgh=this.ENFAmatcher.high(); // highlight
+  var mth=this.ENFAmatcher.graph.active; // matches
   var tmp; // node, link list
   for (it in ret.nodes) {
-   tmp=ret.nodes[it];tmp["phase"]=hgh[it]?((ret.final.indexOf(it)!=-1)?2:1):0;
+   tmp=ret.nodes[it];
+   tmp["phase"]=hgh[it]?((ret.final.indexOf(it)!=-1)?2:1):0;
+   if (mth!=undefined&&mth[it]!=undefined) tmp["matches"]=mth[it];
   }
   return [Model.graph2dict(ret,true)]; // phase on
  },

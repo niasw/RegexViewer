@@ -14,11 +14,11 @@ Model.nodes_links=function(snapshot) {
  for (it0 in snapshot) { // may have many graphs, deal with nodes
   if (snapshot[it0].initial!=undefined) { // dict form
    for (it1 in snapshot[it0].states) {
-    nodes.push({"id":it1,"entry":false,"final":false,"phase":snapshot[it0].states[it1].phase});
+    nodes.push({"id":it1,"entry":false,"final":false,"phase":snapshot[it0].states[it1].phase,"matches":snapshot[it0].states[it1].matches?snapshot[it0].states[it1].matches:undefined});
    }
   } else if (snapshot[it0].entry!=undefined) { // graph form
    for (it1 in snapshot[it0].nodes) {
-    nodes.push({"id":it1,"entry":false,"final":false,"phase":snapshot[it0].nodes[it1].phase});
+    nodes.push({"id":it1,"entry":false,"final":false,"phase":snapshot[it0].nodes[it1].phase,"matches":snapshot[it0].nodes[it1].matches?snapshot[it0].nodes[it1].matches:undefined});
    }
   }
  }

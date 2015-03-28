@@ -127,3 +127,7 @@ svg.chart circle.cursor {
  stroke: none;
  fill: none;
 }
+svg.chart text.mthtx {
+ stroke: rgba(250,200,180,1);
+ color: rgba(250,200,180,1)
+}

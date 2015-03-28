@@ -19,10 +19,11 @@ Draw.auxnf=Draw.canvas.selectAll(".auxnf"); // aux lines to mark entry and final
 Draw.auxns=Draw.canvas.selectAll(".auxns");
 Draw.ndtxt=Draw.canvas.selectAll(".ndtxt"); // share data with nodes
 Draw.lktxt=Draw.canvas.selectAll(".lktxt"); // share data with links
+Draw.mthid=Draw.canvas.selectAll(".mthid"); // matches info
 Draw.tick=function() {
  Draw.links .attr("d",function(d){
   var ret="M" + d.xy[0].x + "," + d.xy[0].y+"S";
-  for(var it=1;it<d.xy.length-1;it+=1){
+  for (var it=1;it<d.xy.length-1;it+=1){
    ret=ret+d.xy[it].x + "," + d.xy[it].y +" ";
   }
   ret=ret+d.xy[d.xy.length-1].x + "," + d.xy[d.xy.length-1].y;
@@ -44,6 +45,9 @@ Draw.tick=function() {
  Draw.auxns
   .attr("cx", function(d) {return d.x;})
   .attr("cy", function(d) {return d.y;});
+ Draw.mthid
+  .attr("x", function(d,i) {return d.x;})
+  .attr("y", function(d,i) {return d.y+0.4*Const.txtsize-Const.circler*1.6;});
 }
 Draw.layout=d3.layout.force().size([Const.wid, Const.hgh]).nodes([]).linkDistance(Const.noddist).charge(Const.strngth).on("tick",Draw.tick);
 
@@ -96,6 +100,14 @@ Draw.defs = Draw.canvas.append("defs").selectAll("marker")
  .attr("style","stroke-width:1pt")
  .attr("d", "M0,-5L10,0L0,5");
 
+function dictionary2string(dict) { // {'A':true,'b':true} -> 'A,b'
+ var tmpstr='';
+ for (var it in dict) {
+  tmpstr=tmpstr+it+',';
+ }
+ return tmpstr.substr(0,tmpstr.length-1);
+}
+
 // nodes initialize
 Draw.refresh=function() {
  Draw.links=Draw.links.data(bilinks,function(d) {return d.id;});
@@ -121,10 +133,16 @@ Draw.refresh=function() {
  Draw.auxns.style('opacity',function(d){return d.entry?1:0;});
  Draw.auxns.enter().insert('circle','.auxns').attr('class','auxns').style('opacity',function(d){return d.entry?1:0;}).style('fill','#ffffff').attr('r',0).transition().duration(Const.deltime).attr('r',Const.circler*0.5);
  Draw.auxns.exit().transition().duration(Const.deltime).attr("r",0).remove();
+
+ Draw.mthid=Draw.mthid.data(Tnodes,function(d) {return d.id;}).text(function(d) {return d.matches?dictionary2string(d.matches):'';});
+ Draw.mthid.style('opacity',function(d){return d.matches?1:0;});
+ Draw.mthid.enter().insert('text','.mthtx').attr('class','mthtx').style('opacity',function(d){return d.matches?1:0;}).text(function(d) {return d.matches?dictionary2string(d.matches):'';}).style('opacity',0).transition().duration(Const.deltime).style('opacity',1);
+ Draw.mthid.exit().transition().duration(Const.deltime).style('opacity',0).remove();
+
  Draw.layout.start();
 }
 Draw.refresh();
-var links = [];var nodes=[];
+var links=[], nodes=[];
 Draw.drawgraph=function(nodesAndLinks) { // FIXME: should acquire variation instead of whole graph.
  for (it in nodesAndLinks.nodes) {
   var tmp1=indexOfkey(Draw.layout.nodes(),nodesAndLinks.nodes[it].id,'id');
@@ -135,11 +153,11 @@ Draw.drawgraph=function(nodesAndLinks) { // FIXME: should acquire variation inst
    tmp2.x=Draw.layout.nodes()[tmp1].x;tmp2.y=Draw.layout.nodes()[tmp1].y;
   }
  }
- Tnodes = nodesAndLinks.nodes;
+ Tnodes=nodesAndLinks.nodes;
  Tlinks=nodesAndLinks.links;
  nodes= nodesAndLinks.nodes.slice(),
  bilinks=[];
- links = [];
+ links=[];
  newlinks=[];
  nodesAndLinks.links.forEach(function(link) {
   var s = nodes[link.source],

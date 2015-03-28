@@ -31,6 +31,7 @@ Context.MatchPro.init=function(content,strategy) {
   }
  }
  Draw.drawgraph(Model.nodes_links(Context.MatchPro.matcher.highdump()));
+ Draw.drawstate(Context.MatchPro.matcher.hightext());
 }
 Context.MatchPro.step=function() {
  if (!Context.MatchPro.matcher) {Context.MatchPro.init();}

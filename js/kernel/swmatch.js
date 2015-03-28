@@ -41,7 +41,7 @@ var ENFAmatcher = function(graph, content, strategy) { // Matcher for ENFA is co
  this.graph.active={};
  if (this.graph&&this.graph.entry) {
   this.graph.active[this.graph.entry.idx]={};
-  this.graph.active[this.graph.entry.idx][this.pos]=true; // use dict as set
+  this.graph.active[this.graph.entry.idx]['-']=true; // use dict as set
  }
  this.matches=[]; // matched string
  var actlen=-1,tmpindex;
@@ -53,7 +53,7 @@ var ENFAmatcher = function(graph, content, strategy) { // Matcher for ENFA is co
      tmpindex=this.graph.nodes[it1].lkt[it3].node.idx;
      if (!this.graph.nodes[it1].lkt[it3].char) { // non-char trans
       if (!this.graph.active[tmpindex]) {this.graph.active[tmpindex]={};}
-      this.graph.active[tmpindex][this.pos]=true;
+      this.graph.active[tmpindex]['-']=true;
       this.graph.nodes[it1].lkt[it3].phase=1;
      }
     }
@@ -103,7 +103,7 @@ ENFAmatcher.prototype = {
  reset:function() { // clear all active states
   this.graph.active={};
   if (this.graph&&this.graph.entry) {
-   this.graph.active[this.graph.entry.idx]=[this.pos];
+   this.graph.active[this.graph.entry.idx]={};this.graph.active[this.graph.entry.idx][this.pos]=true;
   }
   this.matches=[];
   this.aux_updateNonCharTrans(this.graph.active);

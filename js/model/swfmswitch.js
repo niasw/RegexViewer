@@ -14,7 +14,7 @@ Model.graph2dict=function(graph,phaseOn) { // graph form is easier to extend new
  ret["states"]={};
  var tmp,lkl; // node, link list
  for (it in graph.nodes) {
-  tmp={"transit":{}};lkl=graph.nodes[it].lkt;if (phaseOn) {tmp["phase"]=(graph.nodes[it].phase)||0;}
+  tmp={"transit":{}};lkl=graph.nodes[it].lkt;if (phaseOn) {tmp["phase"]=(graph.nodes[it].phase)||0;if (graph.nodes[it].matches!=undefined) tmp["matches"]=graph.nodes[it].matches;}
   for (it2 in lkl) {
    if (lkl[it2]['char']) {
     if (!tmp["transit"][lkl[it2]['char']]) {tmp["transit"][lkl[it2]['char']]={};}
@@ -37,6 +37,7 @@ Model.dict2graph=function(dict,phaseOn) { // dict form is smaller, and easier to
  for (it in dict.states) { // transfer nodes
   tmp=ret.new();
   map[it]=tmp.idx;
+  if (phaseOn) {tmp['phase']=dict.states[it].phase;if (dict.states[it].matches!=undefined) tmp["matches"]=dict.states[it].matches;}
  }
  for (it in dict.states) { // transfer links
   for (it1 in dict.states[it].transit) {
