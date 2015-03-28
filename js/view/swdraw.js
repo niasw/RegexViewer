@@ -6,7 +6,7 @@
 /**   dependency: model/swnodes.js (indexOfkey)**/
 /**   dependency: /lib/d3.min.js **/
 var Draw={};
-var  bilinks = [];
+var bilinks=[];
 var newlinks=[];
 var Tnodes=[], Tlinks=[];
 
@@ -20,17 +20,16 @@ Draw.auxns=Draw.canvas.selectAll(".auxns");
 Draw.ndtxt=Draw.canvas.selectAll(".ndtxt"); // share data with nodes
 Draw.lktxt=Draw.canvas.selectAll(".lktxt"); // share data with links
 Draw.tick=function() {
-    //Draw.links=Tlinks;
-    //Draw.nodes=Tnodes;
  Draw.links .attr("d",function(d){
- var ret="M" + d.xy[0].x + "," + d.xy[0].y+"S";
- for(var it=1;it<d.xy.length-1;it+=1){
- ret=ret+d.xy[it].x + "," + d.xy[it].y +" ";
- }ret=ret+d.xy[d.xy.length-1].x + "," + d.xy[d.xy.length-1].y;
-         return ret;
-     });
+  var ret="M" + d.xy[0].x + "," + d.xy[0].y+"S";
+  for(var it=1;it<d.xy.length-1;it+=1){
+   ret=ret+d.xy[it].x + "," + d.xy[it].y +" ";
+  }
+  ret=ret+d.xy[d.xy.length-1].x + "," + d.xy[d.xy.length-1].y;
+  return ret;
+ });
  Draw.nodes.attr("transform", function(d) {
-     return "translate(" + d.x + "," + d.y + ")";
+  return "translate(" + d.x + "," + d.y + ")";
  });
  var tmpl=Draw.layout.links();
  Draw.lktxt
@@ -84,18 +83,18 @@ Draw.nodecolor=function(phase) {
 }
 
 Draw.defs = Draw.canvas.append("defs").selectAll("marker")
-    .data(["licensing"])
-    .enter().append("svg:marker")
-    .attr("id", "licensing")
-    .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 35)
-    .attr("refY", 1)
-    .attr("markerWidth", 6)
-    .attr("markerHeight", 6)
-    .attr("orient", "auto")
-    .append("svg:path")
-    .attr("style","stroke-width:1pt")
-    .attr("d", "M0,-5L10,0L0,5");
+ .data(["licensing"])
+ .enter().append("svg:marker")
+ .attr("id", "licensing")
+ .attr("viewBox", "0 -5 10 10")
+ .attr("refX", 35)
+ .attr("refY", 1)
+ .attr("markerWidth", 6)
+ .attr("markerHeight", 6)
+ .attr("orient", "auto")
+ .append("svg:path")
+ .attr("style","stroke-width:1pt")
+ .attr("d", "M0,-5L10,0L0,5");
 
 // nodes initialize
 Draw.refresh=function() {
@@ -136,70 +135,52 @@ Draw.drawgraph=function(nodesAndLinks) { // FIXME: should acquire variation inst
    tmp2.x=Draw.layout.nodes()[tmp1].x;tmp2.y=Draw.layout.nodes()[tmp1].y;
   }
  }
-
-
-
-
-    Tnodes = nodesAndLinks.nodes;
-    Tlinks=nodesAndLinks.links;
-
-     nodes= nodesAndLinks.nodes.slice(),
-
-    bilinks=[];
-    links = [];
-	newlinks=[];
-    nodesAndLinks.links.forEach(function(link) {
-        var s = nodes[link.source],
-            t = nodes[link.target],
-            i = {'id':link.id}, // intermediate node
-			tmp1=indexOfkey(Draw.layout.nodes(),i.id,'id');
-            if (tmp1==-1) {
-             i.x=Draw.mouse[0]+Math.random(20)-10;i.y=Draw.mouse[1]+Math.random(20)-10;
-            } else {
-             i.x=Draw.layout.nodes()[tmp1].x;i.y=Draw.layout.nodes()[tmp1].y;
-            }
-        i.char=link.char;
-        if(link.target==link.source)
-        {
-            var tt = {'id':"aux1L"+link.id},t2 = {'id':"aux2L"+link.id}; // intermediate node
-			tmp1=indexOfkey(Draw.layout.nodes(),tt.id,'id');tmp2=indexOfkey(Draw.layout.nodes(),t2.id,'id');
-            if (tmp1==-1) {
-             tt.x=Draw.mouse[0]+Math.random(20)-10;tt.y=Draw.mouse[1]+Math.random(20)-10;
-            } else {
-             tt.x=Draw.layout.nodes()[tmp1].x;tt.y=Draw.layout.nodes()[tmp1].y;
-            }
-            if (tmp2==-1) {
-             t2.x=Draw.mouse[0]+Math.random(20)-10;t2.y=Draw.mouse[1]+Math.random(20)-10;
-            } else {
-             t2.x=Draw.layout.nodes()[tmp2].x;t2.y=Draw.layout.nodes()[tmp2].y;
-            }
-            nodes.push(tt,i,t2);
-            links.push({source: s, target: tt},{source: tt, target: i},{source: i, target: t2},{source: t2, target: t});
-			newlinks.push({},i,{},{});
-            bilinks.push({'xy':[s,tt,i,t2,t],'id':link.id});
-
-        }
-        else
-        {
-            nodes.push(i);
-            links.push({source: s, target: i}, {source: i, target: t});
-			newlinks.push(i,{});
-            bilinks.push({'xy':[s, i, t],'id':link.id});
-        }
-    });
-
-    //Draw.layout.nodes(Tnodes);
-    //Tnodes=Draw.layout.nodes();
-    for (it in nodesAndLinks.links) {
-        nodesAndLinks.links[it].source=nodesAndLinks.nodes[nodesAndLinks.links[it].source]; // convert id into node
-        nodesAndLinks.links[it].target=nodesAndLinks.nodes[nodesAndLinks.links[it].target];
-    }
-    //Tnodes = nodesAndLinks.nodes;
-    //Draw.layout.links(nodesAndLinks.links);
-    //Tlinks=Draw.layout.links();
-    //Draw.layout.nodes(nodesAndLinks.nodes);
-
-    Draw.layout.nodes(nodes,function(d){return d.id;});
+ Tnodes = nodesAndLinks.nodes;
+ Tlinks=nodesAndLinks.links;
+ nodes= nodesAndLinks.nodes.slice(),
+ bilinks=[];
+ links = [];
+ newlinks=[];
+ nodesAndLinks.links.forEach(function(link) {
+  var s = nodes[link.source],
+      t = nodes[link.target],
+      i = {'id':link.id}, // intermediate node
+  tmp1=indexOfkey(Draw.layout.nodes(),i.id,'id');
+  if (tmp1==-1) {
+   i.x=Draw.mouse[0]+Math.random(20)-10;i.y=Draw.mouse[1]+Math.random(20)-10;
+  } else {
+   i.x=Draw.layout.nodes()[tmp1].x;i.y=Draw.layout.nodes()[tmp1].y;
+  }
+  i.char=link.char;
+  if (link.target==link.source) {
+   var tt = {'id':"aux1L"+link.id},t2 = {'id':"aux2L"+link.id}; // intermediate node
+   tmp1=indexOfkey(Draw.layout.nodes(),tt.id,'id');tmp2=indexOfkey(Draw.layout.nodes(),t2.id,'id');
+   if (tmp1==-1) {
+    tt.x=Draw.mouse[0]+Math.random(20)-10;tt.y=Draw.mouse[1]+Math.random(20)-10;
+   } else {
+    tt.x=Draw.layout.nodes()[tmp1].x;tt.y=Draw.layout.nodes()[tmp1].y;
+   }
+   if (tmp2==-1) {
+    t2.x=Draw.mouse[0]+Math.random(20)-10;t2.y=Draw.mouse[1]+Math.random(20)-10;
+   } else {
+    t2.x=Draw.layout.nodes()[tmp2].x;t2.y=Draw.layout.nodes()[tmp2].y;
+   }
+   nodes.push(tt,i,t2);
+   links.push({source: s, target: tt},{source: tt, target: i},{source: i, target: t2},{source: t2, target: t});
+   newlinks.push({},i,{},{});
+   bilinks.push({'xy':[s,tt,i,t2,t],'id':link.id});
+  } else {
+   nodes.push(i);
+   links.push({source: s, target: i}, {source: i, target: t});
+   newlinks.push(i,{});
+   bilinks.push({'xy':[s, i, t],'id':link.id});
+  }
+ });
+ for (it in nodesAndLinks.links) {
+  nodesAndLinks.links[it].source=nodesAndLinks.nodes[nodesAndLinks.links[it].source]; // convert id into node
+  nodesAndLinks.links[it].target=nodesAndLinks.nodes[nodesAndLinks.links[it].target];
+ }
+ Draw.layout.nodes(nodes,function(d){return d.id;});
  Draw.layout.links(links);
  Draw.refresh();
 }
@@ -250,23 +231,22 @@ Draw.drawmsges=function(difmsg,pattern,matchresult) {
 }
 
 function points(d) {
-
-    var a = [d.source.x, d.source.y];
-    var b = [d.target.x, d.target.y];
-    var r = [];
-    var len = Math.sqrt(Math.pow(a[0]-b[0],2)+Math.pow(a[1]-b[1],2));
-    var s = Math.sign(a[0]-b[0]);
-    r[0] = a;
-    r[2] = b;
-    if (b[0] == a[0]) {
-        r[1] = [a[0] + len/2, (a[1] + b[1]) / 2];
-    }
-    else {
-        var k = (b[1] - a[1]) / (b[0] - a[0]);
-        if(k==0)
-            r[1] = [(a[0]+b[0])/2-len/2,a[1]];
-        else
-            r[1]=[(a[0]+b[0])/2+len*k/2/(Math.sqrt(1+k*k))*s,(a[1]+b[1])/2-1/k*len*k*s/2/(Math.sqrt(1+k*k))];
-    }
-    return r;
+ var a = [d.source.x, d.source.y];
+ var b = [d.target.x, d.target.y];
+ var r = [];
+ var len = Math.sqrt(Math.pow(a[0]-b[0],2)+Math.pow(a[1]-b[1],2));
+ var s = Math.sign(a[0]-b[0]);
+ r[0] = a;
+ r[2] = b;
+ if (b[0] == a[0]) {
+  r[1] = [a[0] + len/2, (a[1] + b[1]) / 2];
+ } else {
+  var k = (b[1] - a[1]) / (b[0] - a[0]);
+  if (k==0) {
+   r[1] = [(a[0]+b[0])/2-len/2,a[1]];
+  } else {
+   r[1]=[(a[0]+b[0])/2+len*k/2/(Math.sqrt(1+k*k))*s,(a[1]+b[1])/2-1/k*len*k*s/2/(Math.sqrt(1+k*k))];
+  }
+ }
+ return r;
 }
