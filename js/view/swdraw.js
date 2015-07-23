@@ -20,15 +20,16 @@ Draw.auxns=Draw.canvas.selectAll(".auxns");
 Draw.ndtxt=Draw.canvas.selectAll(".ndtxt"); // share data with nodes
 Draw.lktxt=Draw.canvas.selectAll(".lktxt"); // share data with links
 Draw.mthid=Draw.canvas.selectAll(".mthid"); // matches info
+Draw.dashoff=0; // dashline offset
 Draw.tick=function() {
- Draw.links .attr("d",function(d){
+ Draw.links.attr("d",function(d){
   var ret="M" + d.xy[0].x + "," + d.xy[0].y+"S";
   for (var it=1;it<d.xy.length-1;it+=1){
    ret=ret+d.xy[it].x + "," + d.xy[it].y +" ";
   }
   ret=ret+d.xy[d.xy.length-1].x + "," + d.xy[d.xy.length-1].y;
   return ret;
- });
+ }).attr('stroke-dashoffset',-Math.floor(Draw.dashoff/1000));
  Draw.nodes.attr("transform", function(d) {
   return "translate(" + d.x + "," + d.y + ")";
  });
@@ -48,6 +49,7 @@ Draw.tick=function() {
  Draw.mthid
   .attr("x", function(d,i) {return d.x;})
   .attr("y", function(d,i) {return d.y+0.4*Const.txtsize-Const.circler*1.6;});
+ Draw.dashoff=(Draw.dashoff+Const.dashspd)%(1000*Const.dashlen);
 }
 Draw.layout=d3.layout.force().size([Const.wid, Const.hgh]).nodes([]).linkDistance(Const.noddist).charge(Const.strngth).on("tick",Draw.tick);
 
@@ -111,7 +113,7 @@ function dictionary2string(dict) { // {'A':true,'b':true} -> 'A,b'
 // nodes initialize
 Draw.refresh=function() {
  Draw.links=Draw.links.data(bilinks,function(d) {return d.id;});
- Draw.links.enter().insert('path','.nodes').attr('class','links').style('opacity',0).style('stroke',function(d) {return Draw.linkcolor(d.phase);}).transition().duration(Const.deltime).style('opacity',1).style('stroke',function(d) {return Draw.linkcolor(0);})
+ Draw.links.enter().insert('path','.nodes').attr('class','links').attr('stroke-dasharray',(Const.dashlen-Const.dashgap)+','+Const.dashgap).attr('stroke-dashoffset',-Math.floor(Draw.dashoff/1000)).style('opacity',0).style('stroke',function(d) {return Draw.linkcolor(d.phase);}).transition().duration(Const.deltime).style('opacity',1).style('stroke',function(d) {return Draw.linkcolor(0);})
      .attr("marker-end","url(#licensing)");
  Draw.links.exit().transition().duration(Const.deltime).style('opacity',0).remove();
  Draw.lktxt=Draw.lktxt.data(newlinks).text(function(d) {return d.char;});
